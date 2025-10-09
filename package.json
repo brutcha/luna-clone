@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json.schemastore.org/package.json",
+  "name": "luna-clone",
+  "description": "Expo based clone of the Luna app",
+  "license": "MIT",
+  "version": "0.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "pnpm start:android",
+    "start:android": "pnpm build:android -- --variant debug ",
+    "build:android": "expo run:android",
+    "prepare": "husky",
+    "lint": "expo lint"
+  },
+  "dependencies": {
+    "expo": "^54.0.0",
+    "expo-dev-client": "~6.0.0",
+    "expo-status-bar": "~3.0.0",
+    "nativewind": "5.0.0-preview.1",
+    "react": "^19.1.0",
+    "react-native": "^0.81.4",
+    "react-native-css": "^3.0.0",
+    "react-native-reanimated": "4.1.2",
+    "react-native-safe-area-context": "^5.6.0",
+    "react-native-worklets": "0.5.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.14",
+    "@types/react": "^19.1.17",
+    "eslint-config-expo": "~10.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.3",
+    "postcss": "^8.5.6",
+    "prettier": "3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "tailwindcss": "^4.1.14",
+    "typescript": "^5.9.3"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
+  },
+  "engines": {
+    "node": ">=22.20.0"
+  },
+  "packageManager": "pnpm@10.18.1+sha512.77a884a165cbba2d8d1c19e3b4880eee6d2fcabd0d879121e282196b80042351d5eb3ca0935fa599da1dc51265cc68816ad2bddd2a2de5ea9fdf92adbec7cd34"
+}
