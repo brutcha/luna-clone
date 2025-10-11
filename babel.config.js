@@ -3,8 +3,10 @@ module.exports = function (api) {
   return {
     presets: [["babel-preset-expo", { unstable_transformImportMeta: true }]],
     plugins: [
-      "babel-plugin-transform-vite-meta-env",
-      "@babel/plugin-syntax-import-attributes",
+      // TODO: check if this plugin is needed in production
+      ...(process.env.NODE_ENV !== "production"
+        ? ["babel-plugin-transform-vite-meta-env"]
+        : []),
     ],
   };
 };
