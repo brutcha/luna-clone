@@ -3,13 +3,15 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "baseUrl": "./",
-    "strict": true
+    "strict": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "nativewind-env.d.ts",
-    "eslint.config.js",
-    "metro.config.js"
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/types/**/*.d.ts",
+    "nativewind-env.d.ts"
   ]
 }
