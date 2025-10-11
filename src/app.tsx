@@ -10,15 +10,25 @@ import {
 import { schema } from "@/livestore/schema";
 import { adapter } from "@/livestore/adapter";
 import { user$ } from "@/livestore/queries";
-import { getStoreID } from "@/effect/env";
+import { getLivestoreID } from "@/effect/env";
 import "./global.css";
 
+const livestoreID = getLivestoreID();
+
 export default function App() {
+  if (!livestoreID) {
+    return (
+      <View>
+        <Text>Error: Livestore ID not found</Text>
+      </View>
+    );
+  }
+
   return (
     <LiveStoreProvider
       schema={schema}
       adapter={adapter}
-      storeId={getStoreID()}
+      storeId={livestoreID}
       syncPayload={{ authToken: "insecure-token-change-me" }}
       renderLoading={(_) => (
         <View>

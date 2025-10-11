@@ -1,4 +1,4 @@
-import { Effect, Layer, LogLevel, Schema } from "effect";
+import { Cause, Effect, Layer, LogLevel, Schema } from "effect";
 
 import { GlobalConfig } from "./layers";
 
@@ -31,21 +31,26 @@ export const configLive = Layer.effect(
       getConfig: Effect.sync(() => ({
         env: NODE_ENV ?? "development",
         logLevel: LogLevel.fromLiteral(EXPO_PUBLIC_LOG_LEVEL ?? "Info"),
-        storeID: EXPO_PUBLIC_LIVESTORE_STORE_ID,
+        livestoreID: EXPO_PUBLIC_LIVESTORE_STORE_ID,
       })),
     });
   }),
 );
 
-export const getStoreID = () =>
-  Effect.runSync(
-    Effect.provide(
-      Effect.gen(function* () {
-        const { getConfig } = yield* GlobalConfig;
-        const { storeID } = yield* getConfig;
+export const getLivestoreID = () =>
+  Effect.gen(function* () {
+    const { getConfig } = yield* GlobalConfig;
+    const { livestoreID } = yield* getConfig;
 
-        return storeID;
-      }),
-      configLive,
+    return livestoreID;
+  }).pipe(
+    Effect.provide(configLive),
+    Effect.catchAll((error) =>
+      // TODO: define logger
+      Effect.logFatal(
+        `Failed to load store ID from environment. Ensure EXPO_PUBLIC_LIVESTORE_STORE_ID is set and at least 8 characters long.`,
+        Cause.die(error),
+      ),
     ),
+    Effect.runSync,
   );
