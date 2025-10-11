@@ -15,6 +15,16 @@ import "./global.css";
 
 const livestoreID = getLivestoreID();
 
+/**
+ * Root application component that mounts the LiveStoreProvider and main UI.
+ *
+ * When `livestoreID` is falsing, renders an error view. Otherwise configures and renders a
+ * LiveStoreProvider with `schema`, `adapter`, `storeId`, a placeholder `syncPayload`, `batchUpdates`,
+ * and custom `renderLoading`, `renderError`, and `renderShutdown` callbacks, then renders the
+ * StatusBar and a centered Welcome component as the app content.
+ *
+ * @returns The root JSX element for the application.
+ */
 export default function App() {
   if (!livestoreID) {
     return (
