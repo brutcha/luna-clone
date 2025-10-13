@@ -23,6 +23,9 @@ export class Logging extends Context.Tag("src/services/logging")<
         case "Fatal":
           console.error(message);
           break;
+        default:
+          console.log(message);
+          break;
       }
     }),
   );
