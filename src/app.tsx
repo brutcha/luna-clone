@@ -1,4 +1,4 @@
-import { LiveStoreProvider, useQuery } from "@livestore/react";
+import { useQuery } from "@livestore/react";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
@@ -7,13 +7,11 @@ import {
   View,
 } from "react-native";
 
-import { schema } from "@/livestore/schema";
+import { Provider as LiveStoreProvider } from "./livestore/provider";
 import { adapter } from "@/livestore/adapter";
 import { user$ } from "@/livestore/queries";
-import { getLivestoreID } from "@/effect/env";
+import { schema } from "@/livestore/schema";
 import "./global.css";
-
-const livestoreID = getLivestoreID();
 
 /**
  * Root application component that mounts the LiveStoreProvider and main UI.
@@ -26,20 +24,10 @@ const livestoreID = getLivestoreID();
  * @returns The root JSX element for the application.
  */
 export default function App() {
-  if (!livestoreID) {
-    return (
-      <View>
-        <Text>Error: Livestore ID not found</Text>
-      </View>
-    );
-  }
-
   return (
     <LiveStoreProvider
       schema={schema}
       adapter={adapter}
-      storeId={livestoreID}
-      syncPayload={{ authToken: "insecure-token-change-me" }}
       renderLoading={(_) => (
         <View>
           <Text>Loading LiveStore ({_.stage})...</Text>
