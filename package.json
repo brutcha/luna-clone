@@ -19,6 +19,7 @@
     "@livestore/peer-deps": "0.3.1",
     "@livestore/react": "0.3.1",
     "@livestore/sync-cf": "0.3.1",
+    "effect": "3.15.4",
     "expo": "54.0.12",
     "expo-dev-client": "6.0.13",
     "expo-sqlite": "16.0.8",
@@ -51,5 +52,12 @@
   "engines": {
     "node": ">=22.20.0"
   },
-  "packageManager": "pnpm@10.18.1+sha512.77a884a165cbba2d8d1c19e3b4880eee6d2fcabd0d879121e282196b80042351d5eb3ca0935fa599da1dc51265cc68816ad2bddd2a2de5ea9fdf92adbec7cd34"
+  "packageManager": "pnpm@10.18.1+sha512.77a884a165cbba2d8d1c19e3b4880eee6d2fcabd0d879121e282196b80042351d5eb3ca0935fa599da1dc51265cc68816ad2bddd2a2de5ea9fdf92adbec7cd34",
+  "pnpm": {
+    "overrides": {
+      "effect": "3.15.4",
+      "@effect/platform": "0.82.8",
+      "@effect/experimental": "0.46.8"
+    }
+  }
 }

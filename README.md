@@ -11,7 +11,8 @@ A local-first mobile app built with Expo and Livestore. This is an Android-only 
 - **Sync Engine**: Livestore
 - **State Management**: Livestore with reactive queries
 - **Encryption**: TBD: Livestore will hopefully provide this in the future
-- **Authorization**: TBD: Serverless sollution is preferred
+- **Configuration**: Effect-based services (`GlobalConfig`, `LivestoreConfig`, `Logging`)
+- **Authorization**: Mocked `AuthClient` with Effect service interface, serverless solution is preferred for live implementation
 - **Conflict Resolution**: TBD: Latest wins strategy is enough for now
 - **UI**: NativeWind (Tailwind CSS for React Native)
 
@@ -27,6 +28,7 @@ A local-first mobile app built with Expo and Livestore. This is an Android-only 
 - **React Native** (v0.81.4) - Mobile framework
 - **NativeWind** (v5 preview) - Tailwind CSS for React Native
 - **TypeScript** (v5.9.3) - Type safety
+- **Effect** (v3.15.4) - Service layer, configuration, and logging primitives
 
 ## Getting Started
 
@@ -54,6 +56,9 @@ A local-first mobile app built with Expo and Livestore. This is an Android-only 
 
    Update the `.env.local` file with your store ID and sync token.
 
+   Configure optional environment variables:
+   - `EXPO_PUBLIC_LOG_LEVEL` (`Debug` | `Info` | `Warn` | `Error` | `Fatal` | `Trace`, default: `Info`)
+
 3. **Start the app** (builds and runs on Android):
 
    ```bash
@@ -78,13 +83,13 @@ luna-clone/
 │   ├── index.ts         # Entry point
 │   ├── app.tsx          # Main app component with LiveStoreProvider
 │   ├── global.css       # Global styles (NativeWind/Tailwind)
-│   ├── effect/          # Effect.js configuration
-│   │   ├── env.ts       # Environment variables
-│   │   └── layers.ts    # Effect.js layers
-│   ├── livestore/       # Livestore configuration
+│   ├── domain/          # Domain-level schemas and error types
+│   ├── livestore/       # Livestore configuration and provider
 │   │   ├── schema.ts    # Database schema and state definitions
 │   │   ├── adapter.ts   # Expo SQLite adapter configuration
+│   │   ├── provider.tsx # LiveStoreProvider wrapper with config lookup
 │   │   └── queries.ts   # Reactive queries for data access
+│   ├── services/        # Effect-powered services (config, auth, logging)
 ├── .prettierrc          # Prettier configuration
 ├── app.json             # Expo configuration
 ├── babel.config.js      # Babel configuration
@@ -108,6 +113,10 @@ Defines the database schema and state:
 ### Adapter (`src/livestore/adapter.ts`)
 
 Uses `@livestore/adapter-expo` for SQLite persistence with Expo.
+
+### Provider (`src/livestore/provider.tsx`)
+
+Resolves configuration via Effect services before mounting `LiveStoreProvider`.
 
 ### Queries (`src/livestore/queries.ts`)
 
@@ -151,3 +160,12 @@ Custom type definitions are in `src/types/`:
 - **Lint-staged** - Run Prettier on staged files
 - **Prettier** - Code formatting with Tailwind plugin
 - **ESLint** - Code linting with Expo config
+
+## Services
+
+The services layer encapsulates Effect-powered dependencies that supply configuration, logging, and authentication capabilities to the app while keeping React components declarative.
+
+- `src/services/global-config.ts` - Loads environment and logging configuration via Effect
+- `src/services/livestore-config.ts` - Provides Livestore identifiers and sync flags
+- `src/services/logging.ts` - Effect logger implementation
+- `src/services/auth-client.ts` - Mocked authentication client interface
