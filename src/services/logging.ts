@@ -1,43 +1,41 @@
-import { Context, Logger } from "effect";
+import { Context, Effect, Layer, LogLevel, Logger } from "effect";
+import { GlobalConfig } from "./global-config";
 
+const makePrettyLogger = (logLevel: LogLevel.LogLevel) => {
+  const pretty = Logger.prettyLogger({ mode: "auto" });
+
+  return Layer.mergeAll(
+    Layer.succeed(Logging, pretty),
+    Logger.replace(Logger.defaultLogger, pretty),
+    Logger.minimumLogLevel(logLevel),
+  );
+};
 export class Logging extends Context.Tag("src/services/logging")<
   Logging,
-  Logger.Logger<string, void>
+  Logger.Logger<unknown, unknown>
 >() {
-  static Mock = Logger.replace(
-    Logger.defaultLogger,
-    Logger.make(({ logLevel, message }) => {
-      switch (logLevel._tag) {
-        case "Debug":
-          console.debug(message);
-          break;
-        case "Info":
-          console.info(message);
-          break;
-        case "Warning":
-          console.warn(message);
-          break;
-        case "Error":
-        case "Fatal":
-          console.error(message);
-          break;
-        case "Trace":
-          console.trace(message);
-          break;
+  static Mock = makePrettyLogger(LogLevel.Debug);
 
-        default:
-          console.log(`[${logLevel.label}]: ${message}`);
-          break;
+  static Live = Layer.unwrapEffect(
+    Effect.gen(function* () {
+      yield* Effect.logDebug("Using live logger");
+
+      const { getConfig } = yield* GlobalConfig;
+      const { env, logLevel } = yield* getConfig();
+
+      if (env === "development" || env === "test") {
+        return makePrettyLogger(logLevel);
       }
+
+      // TODO: Implement remote logging, sentry for example
+      return Logger.minimumLogLevel(logLevel);
+    }),
+  ).pipe(
+    Layer.provide(GlobalConfig.Live),
+    Layer.catchAll((error) => {
+      console.error("Failed to initialize live logger", error);
+
+      return Layer.succeed(Logging, Logger.defaultLogger);
     }),
   );
-
-  /**
-   * TODO: Implement logger service
-   * ? Find out if it could be a singleton
-   * ? Should log to console on dev and test
-   * ? Should log to file on prod
-   * ? Should log to sentry when sentry is enabled
-   */
-  static Live = Logging.Mock;
 }

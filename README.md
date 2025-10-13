@@ -169,3 +169,30 @@ The services layer encapsulates Effect-powered dependencies that supply configur
 - `src/services/livestore-config.ts` - Provides Livestore identifiers and sync flags
 - `src/services/logging.ts` - Effect logger implementation
 - `src/services/auth-client.ts` - Mocked authentication client interface
+- `src/services/runtime.ts` - Bundles all live service layers into a single `ManagedRuntime`
+
+### Runtime (`src/services/runtime.ts`)
+
+`AppRuntime` merges all live Effect layers so you can execute `Effect` programs anywhere in the app without rebuilding dependencies.
+
+```typescript
+import { Effect } from "effect";
+import { AppRuntime } from "@/services/runtime";
+import { AuthClient } from "@/services/auth-client";
+
+const loadUser = Effect.gen(function* () {
+  const { getToken } = yield* AuthClient;
+  const token = yield* getToken();
+  yield* Effect.logInfo(`Retrieved auth token`);
+  return token;
+});
+ const loadUser = Effect.gen(function* () {
+   const { getToken } = yield* AuthClient;
+   const token = yield* getToken();
+   yield* Effect.logInfo(`Retrieved auth token`);
+   return token;
+ });
+const user = await AppRuntime.runPromise(loadUser);
+```
+
+The runtime ensures `GlobalConfig`, `LivestoreConfig`, `AuthClient`, and custom Logger are all provisioned before the program runs.

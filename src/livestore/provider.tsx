@@ -1,15 +1,40 @@
 import { LiveStoreProvider } from "@livestore/react";
 import { use, useMemo } from "react";
 import { Text, View } from "react-native";
+import { Effect } from "effect";
 import type { ComponentProps, FC } from "react";
 
-import { getGlobalConfigOrNull } from "@/services/global-config";
+import { GlobalConfig } from "@/services/global-config";
+import { AppRuntime } from "@/services/runtime";
+
+export const globalConfigOrNull = Effect.gen(function* () {
+  const { getConfig } = yield* GlobalConfig;
+
+  return yield* getConfig();
+}).pipe(
+  Effect.catchTags({
+    NoGlobalConfigError: ({ message }) =>
+      Effect.gen(function* () {
+        yield* Effect.logWarning("Failed to get global config", message);
+
+        return null;
+      }),
+    NoLivestoreConfigError: ({ message }) =>
+      Effect.gen(function* () {
+        yield* Effect.logWarning("Failed to get livestore config", message);
+
+        return null;
+      }),
+  }),
+);
 
 export const Provider: FC<
   Omit<ComponentProps<typeof LiveStoreProvider>, "storeId">
 > = ({ children, ...props }) => {
-  // TODO: find out if needed once react compiler is enabled
-  const config = use(useMemo(() => getGlobalConfigOrNull(), []));
+  const config = use(
+    // TODO: find out if memoization is needed once react compiler set-up
+    useMemo(() => AppRuntime.runPromise(globalConfigOrNull), []),
+  );
 
   if (!config) {
     // TODO: create a fallback UI
