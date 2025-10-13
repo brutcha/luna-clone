@@ -45,13 +45,13 @@ export class GlobalConfig extends Context.Tag("src/services/global-config")<
       const env = yield* Config.string("NODE_ENV").pipe(
         Config.withDefault("development"),
         Effect.andThen((string) =>
-          Schema.encodeUnknown(EnvironmentSchema)(string),
+          Schema.decodeUnknown(EnvironmentSchema)(string),
         ),
       );
       const logLevel = yield* Config.string("EXPO_PUBLIC_LOG_LEVEL").pipe(
         Config.withDefault("Info"),
         Effect.andThen((string) =>
-          Schema.encodeUnknown(LogLevelSchema)(string),
+          Schema.decodeUnknown(LogLevelSchema)(string),
         ),
       );
 
