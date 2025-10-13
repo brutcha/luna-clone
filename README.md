@@ -181,9 +181,11 @@ import { AppRuntime } from "@/services/runtime";
 import { AuthClient } from "@/services/auth-client";
 
 const loadUser = Effect.gen(function* () {
-  const user = yield* AuthClient.currentUser();
-  yield* Effect.logInfo(`Loaded user ${user.name}`);
-  return user;
+  const { getToken } = yield* AuthClient;
+  const token = yield* getToken();
+  yield* Effect.logInfo(`Retrieved auth token`);
+  return token;
+});
 });
 
 const user = await AppRuntime.runPromise(loadUser);
