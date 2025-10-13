@@ -3,7 +3,7 @@ import { Config, Context, Effect, Layer, LogLevel, Schema } from "effect";
 import { EnvironmentSchema, LogLevelSchema } from "@/domain/model";
 import { NoGlobalConfigError, NoLivestoreConfigError } from "@/domain/errors";
 import { LivestoreConfig } from "./livestore-config";
-import { Logging } from "./logger";
+import { Logging } from "./logging";
 
 export class GlobalConfig extends Context.Tag("src/services/global-config")<
   GlobalConfig,
