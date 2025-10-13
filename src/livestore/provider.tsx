@@ -1,5 +1,5 @@
 import { LiveStoreProvider } from "@livestore/react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import type { ComponentProps, FC } from "react";
 
 import { getGlobalConfigOrNull } from "@/services/global-config";
@@ -11,7 +11,11 @@ export const Provider: FC<
 
   if (!config) {
     // TODO: create a fallback UI
-    return <View>Unexpected error</View>;
+    return (
+      <View>
+        <Text>Unexpected error</Text>
+      </View>
+    );
   }
 
   return (

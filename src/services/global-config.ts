@@ -1,12 +1,9 @@
 import { Config, Context, Effect, Layer, LogLevel, Schema } from "effect";
 
-import {
-  EnviromentVariablesSchema,
-  EnvironmentSchema,
-  LogLevelSchema,
-} from "@/domain/model";
+import { EnvironmentSchema, LogLevelSchema } from "@/domain/model";
 import { NoGlobalConfigError, NoLivestoreConfigError } from "@/domain/errors";
 import { LivestoreConfig } from "./livestore-config";
+import { Logging } from "./logger";
 
 export class GlobalConfig extends Context.Tag("src/services/global-config")<
   GlobalConfig,
@@ -45,24 +42,20 @@ export class GlobalConfig extends Context.Tag("src/services/global-config")<
     Effect.gen(function* () {
       yield* Effect.logDebug("Using live global config");
 
+      const env = yield* Config.string("NODE_ENV").pipe(
+        Config.withDefault("development"),
+        Effect.andThen((string) =>
+          Schema.encodeUnknown(EnvironmentSchema)(string),
+        ),
+      );
+      const logLevel = yield* Config.string("EXPO_PUBLIC_LOG_LEVEL").pipe(
+        Config.withDefault("Info"),
+        Effect.andThen((string) =>
+          Schema.encodeUnknown(LogLevelSchema)(string),
+        ),
+      );
+
       const { getConfig: getLivestoreConfig } = yield* LivestoreConfig;
-
-      // TODO: find out if parsing the process.env is needed, Config.string('ENV_VARIABLE') may work on it's own
-      const { NODE_ENV, EXPO_PUBLIC_LOG_LEVEL } = yield* Schema.decodeUnknown(
-        EnviromentVariablesSchema,
-      )(process.env);
-
-      const env = yield* Schema.encodeUnknownOption(EnvironmentSchema)(
-        Config.string("ENV").pipe(
-          Config.withDefault(NODE_ENV ?? "development"),
-        ),
-      );
-      const logLevel = yield* Schema.encodeUnknownOption(LogLevelSchema)(
-        Config.string("LOG_LEVEL").pipe(
-          Config.withDefault(EXPO_PUBLIC_LOG_LEVEL ?? "Info"),
-        ),
-      );
-
       const { livestoreID } = yield* getLivestoreConfig();
 
       return {
@@ -74,20 +67,13 @@ export class GlobalConfig extends Context.Tag("src/services/global-config")<
           }),
       };
     }).pipe(
-      Effect.catchTags({
-        NoSuchElementException: ({ message }) =>
-          Effect.fail(
-            new NoGlobalConfigError({
-              message: `Failed to get global config with message: ${message}`,
-            }),
-          ),
-        ParseError: ({ message }) =>
-          Effect.fail(
-            new NoGlobalConfigError({
-              message: `Failed to parse global config with message: ${message}`,
-            }),
-          ),
-      }),
+      Effect.catchTag("ParseError", ({ message }) =>
+        Effect.fail(
+          new NoGlobalConfigError({
+            message: `Failed to parse global config with message: ${message}`,
+          }),
+        ),
+      ),
     ),
   );
 
@@ -100,18 +86,20 @@ export const getGlobalConfigOrNull = () =>
 
     return yield* getConfig();
   }).pipe(
-    Effect.provide(GlobalConfig.Live),
+    Effect.provide(Layer.mergeAll(GlobalConfig.Live, Logging.Live)),
     Effect.catchTags({
-      NoGlobalConfigError({ message }) {
-        Effect.logWarning("Failed to get global config", message);
+      NoGlobalConfigError: ({ message }) =>
+        Effect.gen(function* () {
+          yield* Effect.logWarning("Failed to get global config", message);
 
-        return Effect.succeed(null);
-      },
-      NoLivestoreConfigError({ message }) {
-        Effect.logWarning("Failed to get livestore config", message);
+          return null;
+        }),
+      NoLivestoreConfigError: ({ message }) =>
+        Effect.gen(function* () {
+          yield* Effect.logWarning("Failed to get livestore config", message);
 
-        return Effect.succeed(null);
-      },
+          return null;
+        }),
     }),
     Effect.runSync,
   );
