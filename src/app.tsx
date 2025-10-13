@@ -14,14 +14,13 @@ import { schema } from "@/livestore/schema";
 import "./global.css";
 
 /**
- * Root application component that mounts the LiveStoreProvider and main UI.
+ * Mounts the LiveStore provider and renders the app's root UI.
  *
- * When `livestoreID` is falsing, renders an error view. Otherwise configures and renders a
- * LiveStoreProvider with `schema`, `adapter`, `storeId`, a placeholder `syncPayload`, `batchUpdates`,
- * and custom `renderLoading`, `renderError`, and `renderShutdown` callbacks, then renders the
- * StatusBar and a centered Welcome component as the app content.
+ * The provider is configured with the application schema, adapter, lifecycle renderers for
+ * loading, error, and shutdown states, and uses batched updates. Inside the provider this
+ * component renders the StatusBar and a centered Welcome component.
  *
- * @returns The root JSX element for the application.
+ * @returns The root JSX element for the application
  */
 export default function App() {
   return (
