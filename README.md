@@ -186,8 +186,12 @@ const loadUser = Effect.gen(function* () {
   yield* Effect.logInfo(`Retrieved auth token`);
   return token;
 });
-});
-
+ const loadUser = Effect.gen(function* () {
+   const { getToken } = yield* AuthClient;
+   const token = yield* getToken();
+   yield* Effect.logInfo(`Retrieved auth token`);
+   return token;
+ });
 const user = await AppRuntime.runPromise(loadUser);
 ```
 
