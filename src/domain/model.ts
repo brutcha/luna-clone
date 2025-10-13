@@ -11,14 +11,12 @@ export const EnvironmentSchema = Schema.Literal(
 export type Environment = typeof EnvironmentSchema.Type;
 
 export const LogLevelSchema = Schema.Literal(
-  "All",
   "Fatal",
   "Error",
   "Warning",
   "Info",
   "Debug",
   "Trace",
-  "None",
 ).annotations({
   identifier: "LogLevel",
 });

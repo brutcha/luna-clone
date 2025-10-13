@@ -18,13 +18,15 @@ export class Logging extends Context.Tag("src/services/logging")<
           console.warn(message);
           break;
         case "Error":
-          console.error(message);
-          break;
         case "Fatal":
           console.error(message);
           break;
+        case "Trace":
+          console.trace(message);
+          break;
+
         default:
-          console.log(message);
+          console.log(`[${logLevel.label}]: ${message}`);
           break;
       }
     }),

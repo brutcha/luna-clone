@@ -1,6 +1,6 @@
 import { useQuery } from "@livestore/react";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import { Suspense } from "react";
 import {
   Text,
   unstable_batchedUpdates as batchUpdates,
@@ -24,31 +24,40 @@ import "./global.css";
  */
 export default function App() {
   return (
-    <LiveStoreProvider
-      schema={schema}
-      adapter={adapter}
-      renderLoading={(_) => (
+    <Suspense
+      // TODO: implement a splash screen
+      fallback={
         <View>
-          <Text>Loading LiveStore ({_.stage})...</Text>
+          <Text>Loading...</Text>
         </View>
-      )}
-      renderError={(error: any) => (
-        <View>
-          <Text>Error: {error.toString()}</Text>
-        </View>
-      )}
-      renderShutdown={() => (
-        <View>
-          <Text>LiveStore Shutdown</Text>
-        </View>
-      )}
-      batchUpdates={batchUpdates}
+      }
     >
-      <StatusBar style="auto" />
-      <View className="flex-1 items-center justify-center">
-        <Welcome />
-      </View>
-    </LiveStoreProvider>
+      <LiveStoreProvider
+        schema={schema}
+        adapter={adapter}
+        renderLoading={(_) => (
+          <View>
+            <Text>Loading LiveStore ({_.stage})...</Text>
+          </View>
+        )}
+        renderError={(error: any) => (
+          <View>
+            <Text>Error: {error.toString()}</Text>
+          </View>
+        )}
+        renderShutdown={() => (
+          <View>
+            <Text>LiveStore Shutdown</Text>
+          </View>
+        )}
+        batchUpdates={batchUpdates}
+      >
+        <StatusBar style="auto" />
+        <View className="flex-1 items-center justify-center">
+          <Welcome />
+        </View>
+      </LiveStoreProvider>
+    </Suspense>
   );
 }
 

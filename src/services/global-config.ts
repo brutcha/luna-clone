@@ -101,5 +101,5 @@ export const getGlobalConfigOrNull = () =>
           return null;
         }),
     }),
-    Effect.runSync,
+    Effect.runPromise,
   );

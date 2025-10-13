@@ -31,7 +31,8 @@ export class AuthClient extends Context.Tag("src/services/auth-client")<
             if (isSyncEnabled) {
               return yield* Effect.fail(
                 new UnauthorizedError({
-                  message: "Tried to sync in the AuthClientMock",
+                  message:
+                    "Mock AuthClient: sync is enabled but auth tokens are not available in mock mode. Disable sync or use Live implementation.",
                 }),
               );
             }

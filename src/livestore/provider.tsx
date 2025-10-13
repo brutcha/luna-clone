@@ -1,4 +1,5 @@
 import { LiveStoreProvider } from "@livestore/react";
+import { use, useMemo } from "react";
 import { Text, View } from "react-native";
 import type { ComponentProps, FC } from "react";
 
@@ -7,7 +8,8 @@ import { getGlobalConfigOrNull } from "@/services/global-config";
 export const Provider: FC<
   Omit<ComponentProps<typeof LiveStoreProvider>, "storeId">
 > = ({ children, ...props }) => {
-  const config = getGlobalConfigOrNull();
+  // TODO: find out if needed once react compiler is enabled
+  const config = use(useMemo(() => getGlobalConfigOrNull(), []));
 
   if (!config) {
     // TODO: create a fallback UI
