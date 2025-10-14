@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Text, View } from "react-native";
 
 import { Provider as LiveStoreProvider } from "./livestore/provider";
-import { config$, user$ } from "@/livestore/queries";
+import { currentUser$ } from "@/livestore/queries";
 import "./global.css";
 
 /**
@@ -53,10 +53,11 @@ export default function App() {
 }
 
 const Welcome = () => {
-  const { sessionID } = useQuery(config$);
-  const neco = useQuery(user$(sessionID!));
+  const user = useQuery(currentUser$);
 
   return (
-    <Text className="text-4xl font-bold text-purple-900">Hello {neco}!</Text>
+    <Text className="text-4xl font-bold text-purple-900">
+      Hello {user?.name ?? "stranger"}!
+    </Text>
   );
 };

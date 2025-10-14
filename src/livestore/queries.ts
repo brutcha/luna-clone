@@ -1,4 +1,4 @@
-import { queryDb } from "@livestore/livestore";
+import { computed, queryDb } from "@livestore/livestore";
 
 import { tables } from "./schema";
 
@@ -6,7 +6,29 @@ export const config$ = queryDb(tables.config.get(), {
   label: "livestore-config",
 });
 
-export const user$ = (id: string) =>
-  queryDb(tables.users.select("name").where("id", id).first(), {
-    label: "livestore-user",
-  });
+const userById$ = (id: string) =>
+  queryDb(
+    tables.users
+      .select()
+      .where("id", id)
+      .first({ fallback: () => undefined }),
+    {
+      label: "user",
+      deps: [id],
+    },
+  );
+
+export const currentUser$ = computed(
+  (get) => {
+    const { sessionID } = get(config$);
+
+    if (!sessionID) {
+      return undefined;
+    }
+
+    return get(userById$(sessionID));
+  },
+  {
+    label: "current-user",
+  },
+);
