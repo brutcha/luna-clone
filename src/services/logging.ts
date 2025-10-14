@@ -10,30 +10,38 @@ const makePrettyLogger = (logLevel: LogLevel.LogLevel) => {
     Logger.minimumLogLevel(logLevel),
   );
 };
+
+/**
+ * Logging service.
+ * Provides a logger configured from global configuration.
+ *
+ * TODO: Implement remote logging, for example by using sentry
+ */
 export class Logging extends Context.Tag("src/services/logging")<
   Logging,
   Logger.Logger<unknown, unknown>
 >() {
-  static Mock = makePrettyLogger(LogLevel.Debug);
+  static Test = Layer.succeed(Logging, Logger.defaultLogger);
 
   static Live = Layer.unwrapEffect(
     Effect.gen(function* () {
-      yield* Effect.logDebug("Using live logger");
-
-      const { getConfig } = yield* GlobalConfig;
-      const { env, logLevel } = yield* getConfig();
+      const { env, logLevel } = yield* GlobalConfig.getConfig();
 
       if (env === "development" || env === "test") {
         return makePrettyLogger(logLevel);
       }
 
-      // TODO: Implement remote logging, sentry for example
-      return Logger.minimumLogLevel(logLevel);
+      return Layer.mergeAll(
+        Layer.succeed(Logging, Logger.defaultLogger),
+        Logger.minimumLogLevel(logLevel),
+      );
     }),
   ).pipe(
     Layer.provide(GlobalConfig.Live),
     Layer.catchAll((error) => {
-      console.error("Failed to initialize live logger", error);
+      Effect.logError("Failed to initialize logging", error).pipe(
+        Effect.as(Effect.void),
+      );
 
       return Layer.succeed(Logging, Logger.defaultLogger);
     }),

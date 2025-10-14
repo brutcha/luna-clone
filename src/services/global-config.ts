@@ -1,83 +1,70 @@
-import { Config, Context, Effect, Layer, LogLevel, Schema } from "effect";
+import { Config, Effect, Layer, LogLevel, Schema } from "effect";
 
 import { EnvironmentSchema, LogLevelSchema } from "@/domain/model";
-import { NoGlobalConfigError, NoLivestoreConfigError } from "@/domain/errors";
-import { LivestoreConfig } from "./livestore-config";
+import { NoGlobalConfigError } from "@/domain/errors";
+import { Livestore } from "./livestore";
 
-const liveImplementation = Effect.gen(function* () {
-  yield* Effect.logDebug("Using live global config");
-
-  const env = yield* Config.string("NODE_ENV").pipe(
-    Config.withDefault("development"),
-    Effect.andThen((string) => Schema.decodeUnknown(EnvironmentSchema)(string)),
-  );
-
-  const logLevel = yield* Config.string("EXPO_PUBLIC_LOG_LEVEL").pipe(
-    Config.withDefault("Debug"),
-    Effect.andThen((string) => Schema.decodeUnknown(LogLevelSchema)(string)),
-  );
-
-  const { getConfig: getLivestoreConfig } = yield* LivestoreConfig;
-  const { livestoreID } = yield* getLivestoreConfig();
-
-  return {
-    getConfig: () =>
-      Effect.succeed({
-        env,
-        logLevel: LogLevel.fromLiteral(logLevel),
-        livestoreID,
-      }),
-  };
-}).pipe(
-  Effect.catchTags({
-    ParseError: ({ message }) =>
-      Effect.fail(
-        new NoGlobalConfigError({
-          message: `Failed to parse global config with message: ${message}`,
-        }),
-      ),
-    ConfigError: ({ message }) =>
-      Effect.fail(
-        new NoGlobalConfigError({
-          message: `Failed to load environment config with message: ${message}`,
-        }),
-      ),
-  }),
-);
-
-export class GlobalConfig extends Context.Tag("src/services/global-config")<
-  GlobalConfig,
+/**
+ * Global configuration service.
+ *
+ * Resolves environment variables and Livestore data into a shared app config.
+ */
+export class GlobalConfig extends Effect.Service<GlobalConfig>()(
+  "@/services/global-config",
   {
-    readonly getConfig: () => Effect.Effect<
-      {
-        readonly env: "development" | "production" | "test";
-        readonly logLevel: LogLevel.LogLevel;
-        readonly livestoreID: string;
-      },
-      NoGlobalConfigError | NoLivestoreConfigError
-    >;
-  }
->() {
-  static Mock = Layer.effect(
-    GlobalConfig,
-    Effect.gen(function* () {
-      yield* Effect.logDebug("Using mock global config");
+    effect: Effect.gen(function* () {
+      const { getConfig } = yield* Livestore;
+      const { sessionID } = yield* getConfig();
 
-      const { getConfig: getLivestoreConfig } = yield* LivestoreConfig;
-      const { livestoreID } = yield* getLivestoreConfig();
+      const env = yield* Config.string("NODE_ENV").pipe(
+        Config.withDefault("development"),
+        Effect.andThen(Schema.decodeUnknown(EnvironmentSchema)),
+      );
+
+      const logLevel = yield* Config.string("EXPO_PUBLIC_LOG_LEVEL").pipe(
+        Config.withDefault("Debug"),
+        Effect.andThen(Schema.decodeUnknown(LogLevelSchema)),
+      );
 
       return {
         getConfig: () =>
           Effect.succeed({
-            env: "development" as const,
-            logLevel: LogLevel.Debug,
-            livestoreID,
+            env,
+            logLevel: LogLevel.fromLiteral(logLevel),
+            sessionID,
           }),
       };
+    }).pipe(
+      Effect.catchTags({
+        ParseError: () =>
+          Effect.fail(
+            new NoGlobalConfigError({
+              message: "Failed to load global config",
+            }),
+          ),
+        ConfigError: () =>
+          Effect.fail(
+            new NoGlobalConfigError({
+              message: "Failed to read environment variables",
+            }),
+          ),
+      }),
+    ),
+    dependencies: [Livestore.Live],
+    accessors: true,
+  },
+) {
+  static Test = Layer.succeed(
+    GlobalConfig,
+    new GlobalConfig({
+      getConfig: () =>
+        Effect.succeed({
+          env: "development" as const,
+          logLevel: LogLevel.Debug,
+          sessionID: "mock-session-id",
+        }),
     }),
-  ).pipe(Layer.provide(LivestoreConfig.Mock));
-
-  static Live = Layer.effect(GlobalConfig, liveImplementation).pipe(
-    Layer.provide(LivestoreConfig.Live),
   );
+
+  static Live = GlobalConfig.Default;
 }
