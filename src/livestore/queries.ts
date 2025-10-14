@@ -6,7 +6,7 @@ export const config$ = queryDb(tables.config.get(), {
   label: "livestore-config",
 });
 
-const userById$ = (id: string) =>
+export const userById$ = (id: string) =>
   queryDb(
     tables.users
       .select()

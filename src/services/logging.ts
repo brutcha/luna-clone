@@ -1,4 +1,4 @@
-import { Console, Context, Effect, Layer, LogLevel, Logger } from "effect";
+import { Context, Effect, Layer, LogLevel, Logger } from "effect";
 import { GlobalConfig } from "./global-config";
 
 const makePrettyLogger = (logLevel: LogLevel.LogLevel) => {
