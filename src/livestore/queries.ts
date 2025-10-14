@@ -20,7 +20,7 @@ export const userById$ = (id: string) =>
 
 export const currentUser$ = computed(
   (get) => {
-    const { sessionID } = get(config$);
+    const sessionID = get(config$)?.sessionID;
 
     if (!sessionID) {
       return undefined;
