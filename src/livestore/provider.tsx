@@ -16,7 +16,7 @@ const globalConfigOrNull = Effect.gen(function* () {
   return yield* GlobalConfig.getConfig();
 }).pipe(
   Effect.catchAll((error) => {
-    Effect.logError(error);
+    Effect.logError(error).pipe(Effect.runPromise);
 
     return Effect.succeed(null);
   }),
@@ -49,6 +49,7 @@ export const Provider: FC<
       schema={schema}
       adapter={adapter}
       batchUpdates={unstable_batchedUpdates}
+      // TODO: remove database seeding once livestore service live is in use
       boot={(store) => {
         const config = store.query(config$);
         const sessionID = config.sessionID ?? nanoid();
@@ -58,7 +59,7 @@ export const Provider: FC<
         }
 
         // TODO: redirect to create user screen instead of creating one
-        if (store.query(tables.users.count()) === 0) {
+        if (store.query(tables.users.where("id", sessionID).count()) === 0) {
           store.commit(
             events.userCreated({
               id: sessionID,

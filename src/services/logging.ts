@@ -39,7 +39,7 @@ export class Logging extends Context.Tag("src/services/logging")<
   ).pipe(
     Layer.provide(GlobalConfig.Live),
     Layer.catchAll((error) => {
-      Console.error("Failed to initialize live logger", error);
+      Effect.logError(error).pipe(Effect.runPromise);
 
       return Layer.succeed(Logging, Logger.defaultLogger);
     }),
