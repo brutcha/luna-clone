@@ -39,7 +39,9 @@ export class Logging extends Context.Tag("src/services/logging")<
   ).pipe(
     Layer.provide(GlobalConfig.Live),
     Layer.catchAll((error) => {
-      Effect.logError(error).pipe(Effect.runPromise);
+      Effect.logError("Failed to initialize logging", error).pipe(
+        Effect.as(Effect.void),
+      );
 
       return Layer.succeed(Logging, Logger.defaultLogger);
     }),
