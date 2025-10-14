@@ -8,9 +8,7 @@ const program = Effect.gen(function* () {
   return yield* GlobalConfig.getConfig();
 }).pipe(
   Effect.catchAll((error) =>
-    Effect.logError("Failed to get global config", error).pipe(
-      Effect.as(Effect.void),
-    ),
+    Effect.logError("Failed to get global config", error).pipe(Effect.as(null)),
   ),
 );
 
