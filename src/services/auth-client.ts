@@ -1,32 +1,27 @@
-import { Context, Effect, Layer } from "effect";
+import { Effect } from "effect";
 
-import {
-  NoGlobalConfigError,
-  NoLivestoreConfigError,
-  UnauthorizedError,
-} from "@/domain/errors";
-import { LivestoreConfig } from "./livestore-config";
+import { UnauthorizedError } from "@/domain/errors";
+import { Livestore } from "./livestore";
+import { GlobalConfig } from "./global-config";
 
-export class AuthClient extends Context.Tag("src/services/auth-client")<
-  AuthClient,
+/**
+ * AuthClient service.
+ *
+ * TODO: Implement live auth client.
+ */
+export class AuthClient extends Effect.Service<AuthClient>()(
+  "@/services/auth-client",
   {
-    readonly getToken: () => Effect.Effect<
-      string,
-      UnauthorizedError | NoLivestoreConfigError | NoGlobalConfigError
-    >;
-  }
->() {
-  static Mock = Layer.effect(
-    AuthClient,
-    Effect.gen(function* () {
-      yield* Effect.logDebug("Using mock auth client");
+    effect: Effect.gen(function* () {
+      const { isSyncEnabled } = yield* Livestore.getConfig();
+      const { env } = yield* GlobalConfig.getConfig();
 
-      const { getConfig } = yield* LivestoreConfig;
-
-      return AuthClient.of({
+      return {
         getToken: () =>
           Effect.gen(function* () {
-            const { isSyncEnabled } = yield* getConfig();
+            if (isSyncEnabled && env === "test") {
+              return "mock-token";
+            }
 
             if (isSyncEnabled) {
               return yield* Effect.fail(
@@ -37,12 +32,15 @@ export class AuthClient extends Context.Tag("src/services/auth-client")<
               );
             }
 
-            return "mock-token";
+            return null;
           }),
-      });
+      };
     }),
-  ).pipe(Layer.provide(LivestoreConfig.Mock));
+    dependencies: [Livestore.Live, GlobalConfig.Live],
+    accessors: true,
+  },
+) {
+  static Test = AuthClient.Default;
 
-  // TODO: implement AuthClient implementation
-  static Live = AuthClient.Mock;
+  static Live = AuthClient.Test;
 }

@@ -6,6 +6,7 @@
     "description": "Expo based clone of the Luna app",
     "version": "0.0.0",
     "platforms": ["android"],
+    "newArchEnabled": true,
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash-icon.png",

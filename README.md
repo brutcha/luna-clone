@@ -6,12 +6,12 @@ A local-first mobile app built with Expo and Livestore. This is an Android-only 
 
 - **Client** (`src/app.tsx`): React Native app built with Expo
 - **Platform**: Android only
-- **Local Database**: Livestore SQLite with Expo adapter
+- **Local Database**: Livestore SQLite with Expo adapter (local persistence enabled; multi-tenant sync TBD)
 - **Remote Sync**: TBD: Cloudflare Durable Objects are prefered
 - **Sync Engine**: Livestore
 - **State Management**: Livestore with reactive queries
 - **Encryption**: TBD: Livestore will hopefully provide this in the future
-- **Configuration**: Effect-based services (`GlobalConfig`, `LivestoreConfig`, `Logging`)
+- **Configuration**: Effect-based services (`GlobalConfig`, `Livestore`, `Logging`, `AuthClient`)
 - **Authorization**: Mocked `AuthClient` with Effect service interface, serverless solution is preferred for live implementation
 - **Conflict Resolution**: TBD: Latest wins strategy is enough for now
 - **UI**: NativeWind (Tailwind CSS for React Native)
@@ -53,8 +53,6 @@ A local-first mobile app built with Expo and Livestore. This is an Android-only 
    ```bash
    cp .env.example .env.local
    ```
-
-   Update the `.env.local` file with your store ID and sync token.
 
    Configure optional environment variables:
    - `EXPO_PUBLIC_LOG_LEVEL` (`Debug` | `Info` | `Warn` | `Error` | `Fatal` | `Trace`, default: `Info`)
@@ -101,6 +99,8 @@ luna-clone/
 ```
 
 ## Livestore Implementation
+
+> **Note:** `Livestore.Live` currently aliases the test layer while the sync stack is being built. Local data persists across restarts via the Expo SQLite adapter, but tenancy is mocked and must be revisited before enabling remote sync.
 
 ### Schema (`src/livestore/schema.ts`)
 
@@ -165,11 +165,11 @@ Custom type definitions are in `src/types/`:
 
 The services layer encapsulates Effect-powered dependencies that supply configuration, logging, and authentication capabilities to the app while keeping React components declarative.
 
-- `src/services/global-config.ts` - Loads environment and logging configuration via Effect
-- `src/services/livestore-config.ts` - Provides Livestore identifiers and sync flags
-- `src/services/logging.ts` - Effect logger implementation
-- `src/services/auth-client.ts` - Mocked authentication client interface
-- `src/services/runtime.ts` - Bundles all live service layers into a single `ManagedRuntime`
+- `src/services/livestore.ts` - Provides Livestore access with session configuration getter
+- `src/services/global-config.ts` - Loads environment variables and session configuration
+- `src/services/logging.ts` - Custom logger implementation powered by Effect
+- `src/services/auth-client.ts` - Mocked authentication client interface, live implementation TBD later
+- `src/services/runtime.ts` - Bundles all live service layers into a single `AppRuntime`
 
 ### Runtime (`src/services/runtime.ts`)
 
@@ -190,4 +190,4 @@ const loadUser = Effect.gen(function* () {
 const user = await AppRuntime.runPromise(loadUser);
 ```
 
-The runtime ensures `GlobalConfig`, `LivestoreConfig`, `AuthClient`, and custom Logger are all provisioned before the program runs.
+The runtime ensures `Livestore`, `GlobalConfig`, `AuthClient`, and the logging service are all provisioned before the program runs.

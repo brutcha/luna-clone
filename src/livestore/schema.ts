@@ -1,29 +1,57 @@
-import {
-  makeSchema,
-  Schema,
-  SessionIdSymbol,
-  State,
-} from "@livestore/livestore";
+import { Events, makeSchema, Schema, State } from "@livestore/livestore";
 
 export const tables = {
-  // TODO: make user a synced document
-  user: State.SQLite.clientDocument({
-    name: "user",
+  config: State.SQLite.clientDocument({
+    name: "config",
     schema: Schema.Struct({
-      name: Schema.String,
+      sessionID: Schema.String.pipe(Schema.minLength(21), Schema.optional),
+      isSyncEnabled: Schema.Boolean,
+    }).annotations({
+      identifier: "LivestoreConfig",
     }),
     default: {
-      id: SessionIdSymbol,
-      value: { name: "Dev User" },
+      id: "@livestore/config.tableID",
+      value: {
+        isSyncEnabled: false,
+      },
+    },
+  }),
+  users: State.SQLite.table({
+    name: "users",
+    columns: {
+      id: State.SQLite.text({
+        primaryKey: true,
+        schema: Schema.String.pipe(Schema.minLength(21)),
+      }),
+      name: State.SQLite.text({
+        schema: Schema.String.pipe(Schema.minLength(1)),
+      }),
+      createdAt: State.SQLite.integer({ schema: Schema.DateFromNumber }),
     },
   }),
 };
 
 export const events = {
-  userSet: tables.user.set,
+  configSet: tables.config.set,
+  userCreated: Events.synced({
+    name: "v1.UserCreated",
+    schema: Schema.Struct({
+      id: Schema.String.pipe(Schema.minLength(21)),
+      name: Schema.String.pipe(Schema.minLength(1)),
+      createdAt: Schema.DateFromNumber,
+    }),
+  }),
 };
 
-const materializers = State.SQLite.materializers(events, {});
+const materializers = State.SQLite.materializers(events, {
+  "v1.UserCreated": ({ id, name, createdAt }) => {
+    return tables.users.insert({
+      id,
+      name,
+      createdAt,
+    });
+  },
+});
 
 const state = State.SQLite.makeState({ tables, materializers });
 

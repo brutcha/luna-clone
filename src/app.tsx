@@ -1,16 +1,10 @@
 import { useQuery } from "@livestore/react";
 import { StatusBar } from "expo-status-bar";
 import { Suspense } from "react";
-import {
-  Text,
-  unstable_batchedUpdates as batchUpdates,
-  View,
-} from "react-native";
+import { Text, View } from "react-native";
 
 import { Provider as LiveStoreProvider } from "./livestore/provider";
-import { adapter } from "@/livestore/adapter";
-import { user$ } from "@/livestore/queries";
-import { schema } from "@/livestore/schema";
+import { config$, user$ } from "@/livestore/queries";
 import "./global.css";
 
 /**
@@ -33,8 +27,6 @@ export default function App() {
       }
     >
       <LiveStoreProvider
-        schema={schema}
-        adapter={adapter}
         renderLoading={(_) => (
           <View>
             <Text>Loading LiveStore ({_.stage})...</Text>
@@ -50,7 +42,6 @@ export default function App() {
             <Text>LiveStore Shutdown</Text>
           </View>
         )}
-        batchUpdates={batchUpdates}
       >
         <StatusBar style="auto" />
         <View className="flex-1 items-center justify-center">
@@ -62,9 +53,10 @@ export default function App() {
 }
 
 const Welcome = () => {
-  const { name } = useQuery(user$);
+  const { sessionID } = useQuery(config$);
+  const neco = useQuery(user$(sessionID!));
 
   return (
-    <Text className="text-4xl font-bold text-purple-900">Hello {name}!</Text>
+    <Text className="text-4xl font-bold text-purple-900">Hello {neco}!</Text>
   );
 };

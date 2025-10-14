@@ -7,7 +7,6 @@ export const EnvironmentSchema = Schema.Literal(
 ).annotations({
   identifier: "Environment",
 });
-
 export type Environment = typeof EnvironmentSchema.Type;
 
 export const LogLevelSchema = Schema.Literal(
@@ -20,5 +19,4 @@ export const LogLevelSchema = Schema.Literal(
 ).annotations({
   identifier: "LogLevel",
 });
-
 export type LogLevel = typeof LogLevelSchema.Type;
