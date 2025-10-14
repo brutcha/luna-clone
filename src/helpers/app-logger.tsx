@@ -5,7 +5,14 @@ import { AppRuntime } from "@/services/runtime";
 const createLoggerMethod =
   <T extends typeof Effect.log>(logger: T) =>
   (...args: Parameters<T>) =>
-    logger(...args).pipe(AppRuntime.runSync);
+    logger(...args).pipe(
+      Effect.catchAll(() => {
+        console.error("AppLogger failed to log", ...args);
+
+        return Effect.void;
+      }),
+      AppRuntime.runFork,
+    );
 
 export const AppLogger = {
   log: createLoggerMethod(Effect.log),

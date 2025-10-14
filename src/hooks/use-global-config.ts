@@ -3,16 +3,15 @@ import { Effect } from "effect";
 
 import { GlobalConfig } from "@/services/global-config";
 import { AppRuntime } from "@/services/runtime";
-import { AppLogger } from "@/helpers/app-logger";
 
 const program = Effect.gen(function* () {
   return yield* GlobalConfig.getConfig();
 }).pipe(
-  Effect.catchAll((error) => {
-    AppLogger.error("Failed to get global config", error);
-
-    return Effect.succeed(null);
-  }),
+  Effect.catchAll((error) =>
+    Effect.logError("Failed to get global config", error).pipe(
+      Effect.as(Effect.void),
+    ),
+  ),
 );
 
 export const useGlobalConfig = () => {
