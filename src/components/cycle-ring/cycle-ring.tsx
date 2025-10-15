@@ -70,7 +70,7 @@ export const CycleRing: FC<PropsWithChildren<Props>> = ({
     y: center + radius * Math.sin(currentDayAngle),
   };
   const currentDayPhase = phaseMap[currentDay];
-  const currentDayPhaseColor = currentDayPhase?.color;
+  const currentDayPhaseColor = currentDayPhase?.color ?? "deeppink";
 
   return (
     <View
