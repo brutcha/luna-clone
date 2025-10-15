@@ -40,18 +40,8 @@ export const CycleRing: FC<PropsWithChildren<Props>> = ({
   const currentDayRadius = strokeWidth * CURRENT_DAY_SIZE_RATIO;
   const radius = Math.max(center - strokeWidth / 2 - currentDayRadius / 2, 0);
 
-  const phaseMap = phases.reduce(
-    (
-      days: Array<{ id: string; color: string }>,
-      { id, lengthInDays, color },
-    ): Array<{ id: string; color: string }> => [
-      ...days,
-      ...new Array(lengthInDays).fill({
-        id,
-        color,
-      }),
-    ],
-    [],
+  const phaseMap = phases.flatMap(({ id, lengthInDays, color }) =>
+    Array.from({ length: lengthInDays }, () => ({ id, color }))
   );
 
   const dayAngles = createDayAngles({
