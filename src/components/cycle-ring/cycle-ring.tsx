@@ -109,7 +109,8 @@ export const CycleRing: FC<PropsWithChildren<Props>> = ({
           const phaseEndDay = startDay + lengthInDays - 1;
 
           const startAngle = dayAngles[phaseStartDay];
-          const endAngle = dayAngles[phaseEndDay];
+          const endAngle =
+            dayAngles[phaseEndDay || (phaseEndDay + 1) % timelineLengthInDays];
 
           return (
             <Path
