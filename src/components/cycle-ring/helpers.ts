@@ -3,15 +3,15 @@ export const darkenColor = (color: string, amount: number): string => {
   const hex = color.replace("#", "");
   const r = Math.max(
     0,
-    parseInt(hex.substr(0, 2), 16) - Math.round(255 * amount),
+    parseInt(hex.substring(0, 2), 16) - Math.round(255 * amount),
   );
   const g = Math.max(
     0,
-    parseInt(hex.substr(2, 2), 16) - Math.round(255 * amount),
+    parseInt(hex.substring(2, 4), 16) - Math.round(255 * amount),
   );
   const b = Math.max(
     0,
-    parseInt(hex.substr(4, 2), 16) - Math.round(255 * amount),
+    parseInt(hex.substring(4, 6), 16) - Math.round(255 * amount),
   );
   return `rgb(${r}, ${g}, ${b})`;
 };
