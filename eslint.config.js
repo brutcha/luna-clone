@@ -6,5 +6,8 @@ module.exports = defineConfig([
   expoConfig,
   {
     ignores: ["dist/*", ".expo/**/*", "node_modules/**/*"],
+    rules: {
+      "@typescript-eslint/array-type": ["error", { default: "array-simple" }],
+    },
   },
 ]);
