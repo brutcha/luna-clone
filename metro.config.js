@@ -10,4 +10,4 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-module.exports = withNativewind(config);
+module.exports = withNativewind(config, { inlineRem: 16 });
