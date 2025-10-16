@@ -1,135 +1,197 @@
 # Luna Clone
 
-A local-first mobile app built with Expo and Livestore. This is an Android-only app that uses local-first architecture with SQLite persistence and reactive state management.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
+[![Expo](https://img.shields.io/badge/Expo-54-000020.svg)](https://expo.dev/)
 
-## Architecture
+A local-first mobile app built with Expo and Livestore, featuring SQLite persistence and reactive state management.
 
-- **Client** (`src/app.tsx`): React Native app built with Expo
-- **Platform**: Android only
-- **Local Database**: Livestore SQLite with Expo adapter (local persistence enabled; multi-tenant sync TBD)
-- **Remote Sync**: Powered by Livestore sync engine with Cloudflare Durable Objects currently planned as the remote storage
-- **Sync Engine**: Livestore
-- **State Management**: Livestore with reactive queries
-- **Encryption**: TBD: Livestore will hopefully provide this in the future, otherwise need to implement own encryption before release
-- **Configuration**: Effect-based services (`GlobalConfig`, `Livestore`, `Logging`, `AuthClient`)
-- **Authorization**: Mocked `AuthClient` Effect service interface, serverless solution is preferred for live implementation
-- **Conflict Resolution**: TBD: Latest wins strategy (implemented by Livestore sync engine) is enough for now, could be improved with conflict resolution logic in the future
-- **UI**: NativeWind (Tailwind CSS for React Native)
+> **Status:** Early development - Android only
+
+## Features
+
+- 🚀 Local-first architecture with SQLite persistence
+- ⚡ Reactive state management with Livestore
+- 📱 Android native app built with Expo
+- 🎨 NativeWind (Tailwind CSS for React Native)
+- 🔧 Effect-based service layer for configuration and dependency injection
+- 🔄 React 19 with automatic compiler optimizations
 
 ## Tech Stack
 
+### Core Framework
+
 - **Expo** (v54) - React Native framework with dev client
-- **Livestore** (v0.3.1) - Local-first state management and sync
-  - `@livestore/adapter-expo` - Expo SQLite persistence adapter (awaiting Livestore update to support Expo v54)
-  - `@livestore/react` - React hooks for Livestore
-  - `@livestore/devtools-expo` - Development tools (currently not supported, need to be validated with Expo v54)
-  - `@livestore/sync-cf` - Cloudflare sync (TODO)
-- **React** (v19.1) - UI framework
+- **React** (v19.1) - UI framework with compiler optimizations
 - **React Native** (v0.81.4) - Mobile framework
-- **NativeWind** (v5 preview) - Tailwind CSS for React Native
 - **TypeScript** (v5.9.3) - Type safety
-- **Effect** (v3.15.4) - Service layer, configuration, and logging primitives
+
+### State & Data
+
+- **Livestore** (v0.3.1) - Local-first state management and sync
+  - `@livestore/adapter-expo` - Expo SQLite persistence adapter
+  - `@livestore/react` - React hooks
+  - `@livestore/devtools-expo` - Development tools
+  - `@livestore/sync-cf` - Cloudflare sync (planned)
+
+### Styling & UI
+
+- **NativeWind** (v5 preview) - Tailwind CSS for React Native
+- **@rn-primitives/portal** - Portal primitives
+- **class-variance-authority** - Variant utilities
+- **tailwindcss-animate** - Animation utilities
+
+### Services
+
+- **Effect** (v3.15.4) - Functional programming primitives for services, configuration, and logging
+
+### Development Tools
+
+- **Husky** - Git hooks for pre-commit checks
+- **Lint-staged** - Run Prettier on staged files
+- **Prettier** - Code formatting with Tailwind plugin
+- **ESLint** - Code linting with Expo config + React Compiler plugin
+
+## Architecture
+
+### Platform
+
+- **Client**: React Native app built with Expo (`src/app.tsx`)
+- **Target**: Android only (iOS support TBD)
+- **Local Database**: Livestore SQLite with Expo adapter
+- **State Management**: Livestore with reactive queries
+
+### Planned Features
+
+- **Remote Sync**: Cloudflare Durable Objects via Livestore sync engine (TBD)
+- **Encryption**: Awaiting Livestore native support or custom implementation (TBD)
+- **Authorization**: Serverless solution preferred for production (currently mocked)
+- **Conflict Resolution**: Latest-wins strategy (Livestore default) - may be enhanced later
+
+> **Note:** Livestore's SQLite adapter has compatibility issues with Expo SDK 54, so `Livestore.Live` currently uses a test layer. Local data persists across restarts, but remote sync is disabled until the adapter is updated.
 
 ## Getting Started
 
 ### Prerequisites
 
-- Bun >= 1.0.0 (JavaScript runtime and package manager)
-- Android Studio and Android SDK (for Android development)
+- **Bun** >= 1.0.0 (JavaScript runtime and package manager)
+- **Android Studio** and Android SDK (for Android development)
 
-### Setup
+### Installation
 
-1. **Install dependencies**:
+1. **Clone the repository**:
+
+   ```bash
+   git clone git@github.com:brutcha/luna-clone.git
+   cd luna-clone
+   ```
+
+2. **Install dependencies**:
 
    ```bash
    bun install
    ```
 
-2. **Set up environment variables**:
-
-   Create a `.env.local` file by copying the example:
+3. **Set up environment variables**:
 
    ```bash
    cp .env.example .env.local
    ```
 
-   Configure optional environment variables:
-   - `EXPO_PUBLIC_LOG_LEVEL` (`Debug` | `Info` | `Warn` | `Error` | `Fatal` | `Trace`, default: `Info`)
+   Available environment variables:
+   - `EXPO_PUBLIC_LOG_LEVEL` - Log level (`Trace` | `Debug` | `Info` | `Warn` | `Error` | `Fatal`, default: `Info`)
 
-3. **Start the app** (builds and runs on Android):
+4. **Run the app**:
 
    ```bash
    bun start
    ```
 
+   Then press `a` to open on Android emulator/device.
+
 ### Available Scripts
 
-- `bun start` - Launch the Expo development server
-- `bun build:android` - Build the Android app with Expo
-- `bun build:android:debug` - Build the Android app in debug mode
-- `bun lint` - Run Expo's ESLint configuration
+| Command             | Description                                               |
+| ------------------- | --------------------------------------------------------- |
+| `bun start`         | Start Expo development server                             |
+| `bun android`       | Build Android app (alias for `expo run:android`)          |
+| `bun android:debug` | Build Android app in debug optimized mode                 |
+| `bun lint`          | Run ESLint with Expo config                               |
+| `bun prepare`       | Set up Husky git hooks (runs automatically after install) |
 
 ## Project Structure
 
-```
+```text
 luna-clone/
 ├── assets/              # Images and static assets
 ├── docs/                # Documentation
-│   ├── adr/             # Architecture Decision Records
+│   └── adr/             # Architecture Decision Records
 ├── src/                 # Source code
 │   ├── index.ts         # Entry point
 │   ├── app.tsx          # Main app component with LiveStoreProvider
 │   ├── global.css       # Global styles (NativeWind/Tailwind)
-│   ├── domain/          # Domain-level schemas and error types
-│   ├── livestore/       # Livestore configuration and provider
-│   │   ├── schema.ts    # Database schema and state definitions
-│   │   ├── adapter.ts   # Expo SQLite adapter configuration
-│   │   ├── provider.tsx # LiveStoreProvider wrapper with config lookup
-│   │   └── queries.ts   # Reactive queries for data access
-│   ├── services/        # Effect-powered services (config, auth, logging, livestore)
-├── .prettierrc          # Prettier configuration
+│   ├── components/      # React components
+│   │   ├── cycle-ring/  # Cycle ring component
+│   │   └── ui/          # UI primitives
+│   ├── domain/          # Domain models and error types
+│   ├── helpers/         # Utility helpers
+│   ├── hooks/           # Custom React hooks
+│   ├── lib/             # Utility libraries
+│   ├── livestore/       # Livestore configuration
+│   │   ├── schema.ts    # Database schema and events
+│   │   ├── adapter.ts   # Expo SQLite adapter
+│   │   ├── provider.tsx # LiveStoreProvider wrapper
+│   │   └── queries.ts   # Reactive queries
+│   ├── services/        # Effect-powered services
+│   │   ├── auth-client.ts   # Authentication service (mocked)
+│   │   ├── global-config.ts # Configuration service
+│   │   ├── livestore.ts     # Livestore service
+│   │   ├── logging.ts       # Logging service
+│   │   └── runtime.ts       # App runtime
+│   └── types/           # TypeScript type definitions
 ├── app.json             # Expo configuration
 ├── babel.config.js      # Babel configuration
 ├── eslint.config.js     # ESLint configuration
 ├── metro.config.js      # Metro bundler configuration
-├── nativewind-env.d.ts  # NativeWind types override (required in root)
+├── nativewind-env.d.ts  # NativeWind type definitions (must be in root)
+├── package.json         # Project dependencies
 ├── postcss.config.js    # PostCSS configuration for Tailwind
 └── tsconfig.json        # TypeScript configuration
 ```
 
-## Livestore Implementation
+## Development Guide
 
-> **Note:** `Livestore.Live` currently aliases the test layer, due to Livestore's SQLite adapter not working with Expo v54 outside of the React Context. Local data persists across restarts, but tenancy is mocked and must be revisited before enabling remote sync.
+### Livestore Implementation
 
-### Schema (`src/livestore/schema.ts`)
+#### Schema (`src/livestore/schema.ts`)
 
 Defines the database schema and state:
 
 - **Tables**: SQLite tables for `users` and `config`
-- **Events**: `userCreated` and `configSet` events for updating user and config data
-- **Materializers**: SQLite materializers for event processing
+- **Events**: `userCreated` and `configSet` events for data mutations
+- **Materializers**: Event processors for updating SQLite tables
 
-### Adapter (`src/livestore/adapter.ts`)
+#### Adapter (`src/livestore/adapter.ts`)
 
-Uses `@livestore/adapter-expo` for SQLite persistence with Expo.
+Configures `@livestore/adapter-expo` for SQLite persistence.
 
-### Provider (`src/livestore/provider.tsx`)
+#### Provider (`src/livestore/provider.tsx`)
 
-Resolves configuration via Effect services before mounting `LiveStoreProvider`.
+Wraps `LiveStoreProvider` with Effect-based configuration resolution.
 
-### Queries (`src/livestore/queries.ts`)
+#### Queries (`src/livestore/queries.ts`)
 
 Reactive queries using `queryDb`:
 
-- `config$` - Query for config data
-- `userById$` - Query for user data by ID
-- `currentUser$` - Query for current user
+- `config$` - Configuration data
+- `userById$` - User data by ID
+- `currentUser$` - Current authenticated user
 
-### Usage in Components
+#### Usage Example
 
 ```typescript
 import { useQuery } from "@livestore/react";
-import { currentUser$ } from "./livestore/queries";
+import { currentUser$ } from "@/livestore/queries";
 
 const Welcome = () => {
   const { name } = useQuery(currentUser$);
@@ -137,42 +199,38 @@ const Welcome = () => {
 };
 ```
 
-## TypeScript
+### TypeScript Configuration
 
-### Path Aliases
+#### Path Aliases
 
-The project uses path aliases for cleaner imports:
+The project uses TypeScript path aliases for cleaner imports:
 
 ```typescript
 import { schema } from "@/livestore/schema";
 import { Livestore } from "@/services/livestore";
 ```
 
-### Type Definitions
+Configured in `tsconfig.json` with the `@/*` alias mapping to `./src/*`.
 
-- `nativewind.d.ts` - NativeWind/React Native CSS types, needs to be located in root directory
-- Custom type definitions are in `src/types/`: Add new `.d.ts` files here for global types or module augmentations
+#### Type Definitions
 
-## Development Tools
+- `nativewind-env.d.ts` - NativeWind/React Native CSS types (must be in root)
+- `src/types/` - Custom type definitions and module augmentations
 
-- **Husky** - Git hooks for pre-commit checks
-- **Lint-staged** - Run Prettier on staged files
-- **Prettier** - Code formatting with Tailwind plugin
-- **ESLint** - Code linting with Expo config
+### Services Layer
 
-## Services
+The services layer uses Effect to provide dependency injection and configuration management. All services are bundled into `AppRuntime` for easy consumption.
 
-The services layer encapsulates Effect-powered dependencies that supply configuration, logging, and authentication capabilities to the app while keeping React components declarative.
+#### Available Services
 
-- `src/services/livestore.ts` - Provides Livestore access with session configuration getter
-- `src/services/global-config.ts` - Loads environment variables and session configuration
-- `src/services/logging.ts` - Custom logger implementation powered by Effect
-- `src/services/auth-client.ts` - Mocked authentication client interface, live implementation TBD later
-- `src/services/runtime.ts` - Bundles service layers into a single `AppRuntime`
+| Service        | Purpose                                         |
+| -------------- | ----------------------------------------------- |
+| `GlobalConfig` | Environment variables and session configuration |
+| `Livestore`    | Livestore access with configuration resolution  |
+| `AuthClient`   | Authentication interface (currently mocked)     |
+| `Logging`      | Custom logger with Effect integration           |
 
-### Runtime (`src/services/runtime.ts`)
-
-`AppRuntime` merges all service layers into a single `AppRuntime`, to be used for any `Effect` programs.
+#### Runtime Usage (`src/services/runtime.ts`)
 
 ```typescript
 import { Effect } from "effect";
@@ -182,20 +240,16 @@ import { AuthClient } from "@/services/auth-client";
 const program = Effect.gen(function* () {
   const { getToken } = yield* AuthClient;
   const token = yield* getToken();
-  yield* Effect.logInfo(`Retrieved auth token`);
+  yield* Effect.logInfo("Retrieved auth token");
   return token;
 });
 
 const token = await AppRuntime.runPromise(program);
 ```
 
-### Livestore service (`src/services/livestore.ts`)
+#### Livestore Service
 
-This service wraps Livestore so code that runs outside React components can read configuration state without touching the React context store: it seeds the database, creates a session ID when needed, and offers a `getConfig()` method.
-
-> **`getConfig()` method:** Returns the Livestore configuration document with the resolved `sessionID`. Callers use it to look up the current session without touching the React provider or the underlying store.
->
-> **Mocking note:** `Livestore.Live` resolves to the test provider because Livestore's SQLite adapter currently conflicts with Expo SDK 54, causing runtime failures in the live service. The mock keeps the app running until the version gap closes.
+The `Livestore` service enables code outside React components to read configuration state:
 
 ```typescript
 import { Effect } from "effect";
@@ -204,11 +258,66 @@ import { AppRuntime } from "@/services/runtime";
 
 const program = Effect.gen(function* () {
   const { sessionID } = yield* Livestore.getConfig();
-
   return sessionID;
 });
 
 const sessionID = await AppRuntime.runPromise(program);
 ```
 
-The runtime ensures `Livestore`, `GlobalConfig`, `AuthClient`, and the logging service are all provisioned before the program runs.
+### React Compiler
+
+The project uses the **React 19 Compiler** for automatic performance optimizations:
+
+#### Benefits
+
+- Automatic memoization - no manual `useMemo`, `useCallback`, or `React.memo` needed
+- Reduced boilerplate code
+- Improved re-render efficiency
+- Build-time optimization
+
+#### Configuration
+
+- ESLint plugin: `eslint-plugin-react-compiler` (v19.1.0-rc.2)
+- Runs automatically during development and production builds
+- Follow ESLint warnings to ensure optimal compiler results
+
+### Git Hooks
+
+The project uses Husky for automated code quality checks:
+
+- **Pre-commit**: Runs Prettier on staged files via `lint-staged`
+- **Setup**: Automatically configured by `bun prepare` (runs after `bun install`)
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Code Style
+
+- Follow the existing code style
+- Run `bun lint` before committing
+- Prettier will auto-format your code on commit
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Roadmap
+
+- [ ] Resolve Livestore adapter compatibility with Expo SDK 54
+- [ ] Implement remote sync with Cloudflare Durable Objects
+- [ ] Add end-to-end encryption
+- [ ] Replace mocked AuthClient with serverless authentication
+- [ ] Add iOS support
+- [ ] Enable Livestore devtools for debugging
+
+## Acknowledgments
+
+- [Livestore](https://github.com/livestore/livestore) - Local-first state management
+- [Expo](https://expo.dev/) - React Native framework
+- [Effect](https://effect.website/) - Functional programming for TypeScript
+- [NativeWind](https://www.nativewind.dev/) - Tailwind CSS for React Native

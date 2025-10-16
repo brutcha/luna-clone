@@ -7,8 +7,8 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "expo start",
-    "build:android": "expo run:android",
-    "build:android:debug": "bun build:android -- --variant debugOptimized",
+    "android": "expo run:android",
+    "android:debug": "bun android -- --variant debugOptimized",
     "prepare": "husky",
     "lint": "expo lint"
   },
@@ -42,8 +42,10 @@
   "devDependencies": {
     "@tailwindcss/postcss": "4.1.14",
     "@types/react": "19.1.17",
+    "babel-plugin-react-compiler": "1.0.0",
     "babel-plugin-transform-vite-meta-env": "1.0.3",
     "eslint-config-expo": "10.0.0",
+    "eslint-plugin-react-compiler": "19.1.0-rc.2",
     "husky": "9.1.7",
     "lint-staged": "16.2.3",
     "postcss": "8.5.6",

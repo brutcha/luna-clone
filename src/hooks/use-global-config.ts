@@ -5,7 +5,13 @@ import { GlobalConfig } from "@/services/global-config";
 import { AppRuntime } from "@/services/runtime";
 
 export const useGlobalConfig = () => {
-  // TODO: Check if useMemo is required once react compiler is set-up
+  /**
+   * ? Manual useMemo is required because the React Compiler won't automatically
+   * ? memoize promise creation, as it's considered a side effect that might not
+   * ? be idempotent (safe to run multiple times with the same result).
+   * ? The use() hook requires the exact same promise instance across renders to
+   * ? avoid "uncached promise" errors.
+   */
   const promise = useMemo(
     () =>
       Effect.gen(function* () {
