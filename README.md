@@ -34,8 +34,7 @@ A local-first mobile app built with Expo and Livestore. This is an Android-only 
 
 ### Prerequisites
 
-- Node.js >= 22.20.0 (may be migrated to bun later)
-- pnpm >= 10.18.1
+- Bun >= 1.0.0 (JavaScript runtime and package manager)
 - Android Studio and Android SDK (for Android development)
 
 ### Setup
@@ -43,7 +42,7 @@ A local-first mobile app built with Expo and Livestore. This is an Android-only 
 1. **Install dependencies**:
 
    ```bash
-   pnpm install
+   bun install
    ```
 
 2. **Set up environment variables**:
@@ -60,15 +59,15 @@ A local-first mobile app built with Expo and Livestore. This is an Android-only 
 3. **Start the app** (builds and runs on Android):
 
    ```bash
-   pnpm start
+   bun start
    ```
 
 ### Available Scripts
 
-- `pnpm start` - Launch the Expo development server
-- `pnpm build:android` - Build the Android app with Expo
-- `pnpm build:android:debug` - Build the Android app in debug mode
-- `pnpm lint` - Run Expo's ESLint configuration
+- `bun start` - Launch the Expo development server
+- `bun build:android` - Build the Android app with Expo
+- `bun build:android:debug` - Build the Android app in debug mode
+- `bun lint` - Run Expo's ESLint configuration
 
 ## Project Structure
 
