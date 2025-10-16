@@ -121,7 +121,7 @@ A local-first mobile app built with Expo and Livestore, featuring SQLite persist
 
 ## Project Structure
 
-```
+```text
 luna-clone/
 ├── assets/              # Images and static assets
 ├── docs/                # Documentation
