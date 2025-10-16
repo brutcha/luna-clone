@@ -111,13 +111,13 @@ A local-first mobile app built with Expo and Livestore, featuring SQLite persist
 
 ### Available Scripts
 
-| Command                   | Description                                               |
-| ------------------------- | --------------------------------------------------------- |
-| `bun start`               | Start Expo development server                             |
-| `bun build:android`       | Build Android app (alias for `expo run:android`)          |
-| `bun build:android:debug` | Build Android app in debug optimized mode                 |
-| `bun lint`                | Run ESLint with Expo config                               |
-| `bun prepare`             | Set up Husky git hooks (runs automatically after install) |
+| Command             | Description                                               |
+| ------------------- | --------------------------------------------------------- |
+| `bun start`         | Start Expo development server                             |
+| `bun android`       | Build Android app (alias for `expo run:android`)          |
+| `bun android:debug` | Build Android app in debug optimized mode                 |
+| `bun lint`          | Run ESLint with Expo config                               |
+| `bun prepare`       | Set up Husky git hooks (runs automatically after install) |
 
 ## Project Structure
 

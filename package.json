@@ -7,12 +7,10 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "expo start",
-    "build:android": "expo run:android",
-    "build:android:debug": "bun build:android -- --variant debugOptimized",
-    "prepare": "husky",
-    "lint": "expo lint",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "android:debug": "bun android -- --variant debugOptimized",
+    "prepare": "husky",
+    "lint": "expo lint"
   },
   "dependencies": {
     "@livestore/adapter-expo": "0.3.1",
