@@ -3,8 +3,10 @@ import { userById$ } from "@/lib/livestore/queries";
 import { useSessionID } from "./auth-hooks";
 
 /**
- * Hook to get the current user
- * Uses the current session ID to fetch the user from livestore
+ * Provides the query result for the current authenticated user.
+ *
+ * @returns The user object, or null if session ID is not available, or user
+ * is not found.
  */
 export function useCurrentUser() {
   const sessionID = useSessionID();

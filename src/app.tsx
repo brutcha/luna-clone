@@ -9,11 +9,11 @@ import { useCurrentUser } from "@/lib/hooks/user-hooks";
 import "./global.css";
 
 /**
- * Mounts the LiveStore provider and renders the app's root UI.
+ * Render the application's root component tree wrapped with the LiveStore provider.
  *
- * The provider is configured with the application schema, adapter, lifecycle renderers for
- * loading, error, and shutdown states, and uses batched updates. Inside the provider this
- * component renders the StatusBar and a centered Welcome component.
+ * Renders a Suspense fallback while initializing, mounts LivestoreProvider with renderers
+ * for loading, error, and shutdown states, and returns the main UI which includes the
+ * StatusBar, a centered CycleRing (containing the Welcome component), and a PortalHost.
  *
  * @returns The root JSX element for the application
  */
