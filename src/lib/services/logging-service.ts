@@ -37,14 +37,13 @@ export class LoggingService extends Context.Tag("src/services/logging")<
         Layer.succeed(LoggingService, Logger.defaultLogger),
         Logger.minimumLogLevel(logLevel),
       );
-    }),
-  ).pipe(
-    Layer.catchAll((error) => {
-      Effect.logError("Failed to initialize logging", error).pipe(
-        Effect.as(Effect.void),
-      );
-
-      return Layer.succeed(LoggingService, Logger.defaultLogger);
-    }),
+    }).pipe(
+      Effect.tapError((error) =>
+        Effect.logError("Failed to initialize logging", error),
+      ),
+      Effect.catchAll(() =>
+        Effect.succeed(Layer.succeed(LoggingService, Logger.defaultLogger)),
+      ),
+    ),
   );
 }

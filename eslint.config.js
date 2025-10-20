@@ -4,7 +4,7 @@ const expoConfig = require("eslint-config-expo/flat");
 const reactCompiler = require("eslint-plugin-react-compiler");
 
 module.exports = defineConfig([
-  expoConfig.map((config) => {
+  ...expoConfig.map((config) => {
     if (config.files && config.files.includes("**/*.ts")) {
       return {
         ...config,

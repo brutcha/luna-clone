@@ -1,4 +1,4 @@
-import { queryDb } from "@livestore/livestore";
+import { computed, queryDb } from "@livestore/livestore";
 
 import { tables } from "./schema";
 import { systemTables } from "./system-schema";
@@ -13,13 +13,24 @@ export const systemConfig$ = queryDb(systemTables.config.get(), {
 
 /**
  * Get user by ID from the user database
+ * Returns null if id is null, or user is not found
  */
-export const userById$ = (id: string) =>
-  queryDb(
-    tables.users
-      .select()
-      .where("id", id)
-      .first({ fallback: () => undefined }),
+export const userById$ = (id: string | null) =>
+  computed(
+    (get) => {
+      if (!id) {
+        return null;
+      }
+
+      return get(
+        queryDb(
+          tables.users
+            .select()
+            .where("id", id)
+            .first({ fallback: () => null }),
+        ),
+      );
+    },
     {
       label: "user",
       deps: [id],

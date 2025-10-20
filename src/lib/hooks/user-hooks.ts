@@ -8,6 +8,5 @@ import { useSessionID } from "./auth-hooks";
  */
 export function useCurrentUser() {
   const sessionID = useSessionID();
-  const user = useQuery(userById$(sessionID));
-  return user;
+  return useQuery(userById$(sessionID));
 }

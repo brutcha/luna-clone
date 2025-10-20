@@ -1,8 +1,9 @@
-import { Effect, Layer } from "effect";
+import { Effect, Either, Layer, Schema } from "effect";
 import { createStorePromise, Store } from "@livestore/livestore";
 
 import { adapter } from "@/lib/livestore/adapter";
 import { systemSchema, systemTables } from "@/lib/livestore/system-schema";
+import { InvalidSessionConfigError } from "./domain/errors";
 
 /**
  * SessionStore service - manages session and app configuration persistence.
@@ -10,6 +11,10 @@ import { systemSchema, systemTables } from "@/lib/livestore/system-schema";
  * This is a pure storage layer for system-wide data (sessionID, sync settings).
  * Business logic for session creation/management belongs in User or Auth services.
  */
+
+// Recreate the schema based on the table definition for input validation
+const SetConfigInputSchema = Schema.partial(systemTables.config.valueSchema);
+
 export class SessionStoreService extends Effect.Service<SessionStoreService>()(
   "@/services/session-store",
   {
@@ -37,15 +42,20 @@ export class SessionStoreService extends Effect.Service<SessionStoreService>()(
         /**
          * Update the config
          */
-        setConfig: (config: { sessionID?: string; isSyncEnabled?: boolean }) =>
-          Effect.sync(() => {
-            store.commit(systemTables.config.set(config));
-          }),
-
-        /**
-         * Direct access to the system store for advanced usage
-         */
-        store,
+        setConfig: (config: typeof SetConfigInputSchema.Encoded) =>
+          Schema.decodeUnknownEither(SetConfigInputSchema)(config).pipe(
+            Either.map((validConfig) => {
+              store.commit(systemTables.config.set(validConfig));
+            }),
+            Effect.catchTags({
+              ParseError: (error: { message: string }) =>
+                Effect.fail(
+                  new InvalidSessionConfigError({
+                    message: `Invalid config input: ${error.message}`,
+                  }),
+                ),
+            }),
+          ),
       };
     }),
     accessors: true,
@@ -61,8 +71,7 @@ export class SessionStoreService extends Effect.Service<SessionStoreService>()(
           sessionID: undefined,
           isSyncEnabled: false,
         }),
-      setConfig: () => Effect.void,
-      store: null as any,
+      setConfig: (_config: typeof SetConfigInputSchema.Encoded) => Effect.void,
     }),
   );
 }

@@ -13,6 +13,9 @@ import { AuthService } from "./auth-service";
  *
  * TODO: check data reactivity between a service and LivestoreProvider
  * ? In case data are not in sync, make sure data are readonly
+ *
+ * FIXME: getting sessionID is not reactive, the livestore instance won't
+ * be updated when user logs out
  */
 export class LivestoreService extends Effect.Service<LivestoreService>()(
   "@/services/livestore",

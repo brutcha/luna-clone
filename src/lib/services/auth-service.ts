@@ -2,6 +2,10 @@ import { nanoid } from "@livestore/livestore";
 import { Effect, Layer } from "effect";
 
 import { SessionStoreService } from "./session-store-service";
+import {
+  AuthenticationError,
+  InvalidSessionConfigError,
+} from "./domain/errors";
 
 /**
  * Auth service - manages authentication and session lifecycle.
@@ -9,7 +13,7 @@ import { SessionStoreService } from "./session-store-service";
  * Responsible for:
  * - Creating and managing sessions (sessionID)
  * - User authentication (login/logout)
- * - Token management for sync
+ * TODO: Token management for sync
  *
  * SessionID behavior:
  * - Anonymous users: Generated locally and persisted
@@ -39,7 +43,16 @@ export class AuthService extends Effect.Service<AuthService>()(
             yield* Effect.logInfo(`Anonymous session created: ${sessionID}`);
 
             return sessionID;
-          }),
+          }).pipe(
+            Effect.catchTags({
+              InvalidSessionConfigError: (error: InvalidSessionConfigError) =>
+                Effect.fail(
+                  new AuthenticationError({
+                    message: `Failed to create session with error: ${error.message}`,
+                  }),
+                ),
+            }),
+          ),
 
         /**
          * Login with userId (sets sessionID = userId for sync)
@@ -51,7 +64,16 @@ export class AuthService extends Effect.Service<AuthService>()(
               isSyncEnabled: true,
             });
             yield* Effect.logInfo(`User logged in: ${userId}`);
-          }),
+          }).pipe(
+            Effect.catchTags({
+              InvalidSessionConfigError: (error: InvalidSessionConfigError) =>
+                Effect.fail(
+                  new AuthenticationError({
+                    message: `Failed to login with error: ${error.message}`,
+                  }),
+                ),
+            }),
+          ),
 
         /**
          * Logout (creates new anonymous session)
@@ -66,7 +88,16 @@ export class AuthService extends Effect.Service<AuthService>()(
             yield* Effect.logInfo(
               `User logged out, new session: ${newSessionID}`,
             );
-          }),
+          }).pipe(
+            Effect.catchTags({
+              InvalidSessionConfigError: (error: InvalidSessionConfigError) =>
+                Effect.fail(
+                  new AuthenticationError({
+                    message: `Failed to logout with error: ${error.message}`,
+                  }),
+                ),
+            }),
+          ),
       };
     }),
     accessors: true,

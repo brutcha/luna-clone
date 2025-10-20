@@ -1,5 +1,5 @@
 import { LiveStoreProvider } from "@livestore/react";
-import { unstable_batchedUpdates } from "react-native";
+import { Text, unstable_batchedUpdates, View } from "react-native";
 import type { ComponentProps, FC } from "react";
 
 import { events, schema, tables } from "@/lib/livestore/schema";
@@ -16,6 +16,14 @@ export const LivestoreProvider: FC<
   >
 > = ({ children, ...props }) => {
   const sessionID = useSessionID();
+
+  if (!sessionID) {
+    return (
+      <View>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <LiveStoreProvider
