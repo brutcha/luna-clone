@@ -16,7 +16,7 @@ import { InvalidSessionConfigError } from "./domain/errors";
 const SetConfigInputSchema = Schema.partial(systemTables.config.valueSchema);
 
 export class SessionStoreService extends Effect.Service<SessionStoreService>()(
-  "@/services/session-store",
+  "@/lib/services/session-store",
   {
     scoped: Effect.gen(function* () {
       yield* Effect.logDebug("Initializing SessionStore");

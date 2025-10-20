@@ -20,7 +20,7 @@ import {
  * - Authenticated users: sessionID === userId for cross-device sync
  */
 export class AuthService extends Effect.Service<AuthService>()(
-  "@/services/auth",
+  "@/lib/services/auth",
   {
     effect: Effect.gen(function* () {
       const sessionStore = yield* SessionStoreService;

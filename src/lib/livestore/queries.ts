@@ -32,7 +32,7 @@ export const userById$ = (id: string | null) =>
       );
     },
     {
-      label: "user",
+      label: "user-by-id",
       deps: [id],
     },
   );

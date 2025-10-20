@@ -14,7 +14,7 @@ export const systemTables = {
       identifier: "SystemConfig",
     }),
     default: {
-      id: "@system/config.tableID",
+      id: "@/lib/livestore/system-schema.config-table",
       value: {
         // sessionID is optional - will be set by User/Auth service on first boot
         isSyncEnabled: false,

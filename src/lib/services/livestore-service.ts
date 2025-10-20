@@ -18,7 +18,7 @@ import { AuthService } from "./auth-service";
  * be updated when user logs out
  */
 export class LivestoreService extends Effect.Service<LivestoreService>()(
-  "@/services/livestore",
+  "@/lib/services/livestore",
   {
     scoped: Effect.gen(function* () {
       const auth = yield* AuthService;

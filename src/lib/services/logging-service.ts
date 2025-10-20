@@ -19,7 +19,7 @@ const makePrettyLogger = (logLevel: LogLevel.LogLevel) => {
  *
  * TODO: Implement remote logging, for example by using sentry
  */
-export class LoggingService extends Context.Tag("src/services/logging")<
+export class LoggingService extends Context.Tag("@/lib/services/logging")<
   LoggingService,
   Logger.Logger<unknown, unknown>
 >() {

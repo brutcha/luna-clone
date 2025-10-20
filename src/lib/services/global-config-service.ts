@@ -9,7 +9,7 @@ import { NoGlobalConfigError } from "@/lib/services/domain/errors";
  * Resolves environment variables into a shared app config.
  */
 export class GlobalConfigService extends Effect.Service<GlobalConfigService>()(
-  "@/services/global-config",
+  "@/lib/services/global-config",
   {
     effect: Effect.gen(function* () {
       const env = yield* Config.string("NODE_ENV").pipe(
