@@ -41,7 +41,7 @@ export const CycleRing: FC<PropsWithChildren<Props>> = ({
   const radius = Math.max(center - strokeWidth / 2 - currentDayRadius / 2, 0);
 
   const phaseMap = phases.flatMap(({ id, lengthInDays, color }) =>
-    Array.from({ length: lengthInDays }, () => ({ id, color }))
+    Array.from({ length: lengthInDays }, () => ({ id, color })),
   );
 
   const dayAngles = createDayAngles({

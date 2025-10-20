@@ -5,9 +5,6 @@ module.exports = function (api) {
       [
         "babel-preset-expo",
         {
-          "react-compiler": {
-            compilationMode: "all",
-          },
           unstable_transformImportMeta: true,
         },
       ],

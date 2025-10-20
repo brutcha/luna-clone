@@ -1,11 +1,13 @@
 import { Context, Effect, Layer, LogLevel, Logger } from "effect";
-import { GlobalConfig } from "./global-config";
+import { GlobalConfigService } from "./global-config-service";
 
 const makePrettyLogger = (logLevel: LogLevel.LogLevel) => {
-  const pretty = Logger.prettyLogger({ mode: "auto" });
+  const pretty = Logger.prettyLogger({ mode: "auto" }).pipe(
+    Logger.withLeveledConsole,
+  );
 
   return Layer.mergeAll(
-    Layer.succeed(Logging, pretty),
+    Layer.succeed(LoggingService, pretty),
     Logger.replace(Logger.defaultLogger, pretty),
     Logger.minimumLogLevel(logLevel),
   );
@@ -17,33 +19,32 @@ const makePrettyLogger = (logLevel: LogLevel.LogLevel) => {
  *
  * TODO: Implement remote logging, for example by using sentry
  */
-export class Logging extends Context.Tag("src/services/logging")<
-  Logging,
+export class LoggingService extends Context.Tag("src/services/logging")<
+  LoggingService,
   Logger.Logger<unknown, unknown>
 >() {
-  static Test = Layer.succeed(Logging, Logger.defaultLogger);
+  static Test = Layer.succeed(LoggingService, Logger.defaultLogger);
 
   static Live = Layer.unwrapEffect(
     Effect.gen(function* () {
-      const { env, logLevel } = yield* GlobalConfig.getConfig();
+      const { env, logLevel } = yield* GlobalConfigService.getConfig();
 
       if (env === "development" || env === "test") {
         return makePrettyLogger(logLevel);
       }
 
       return Layer.mergeAll(
-        Layer.succeed(Logging, Logger.defaultLogger),
+        Layer.succeed(LoggingService, Logger.defaultLogger),
         Logger.minimumLogLevel(logLevel),
       );
     }),
   ).pipe(
-    Layer.provide(GlobalConfig.Live),
     Layer.catchAll((error) => {
       Effect.logError("Failed to initialize logging", error).pipe(
         Effect.as(Effect.void),
       );
 
-      return Layer.succeed(Logging, Logger.defaultLogger);
+      return Layer.succeed(LoggingService, Logger.defaultLogger);
     }),
   );
 }

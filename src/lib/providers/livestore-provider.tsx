@@ -1,46 +1,30 @@
-import { nanoid } from "@livestore/livestore";
 import { LiveStoreProvider } from "@livestore/react";
-import { Text, unstable_batchedUpdates, View } from "react-native";
+import { unstable_batchedUpdates } from "react-native";
 import type { ComponentProps, FC } from "react";
 
-import { useGlobalConfig } from "@/hooks/use-global-config";
-import { events, schema, tables } from "./schema";
-import { adapter } from "./adapter";
-import { config$ } from "./queries";
+import { events, schema, tables } from "@/lib/livestore/schema";
+import { adapter } from "@/lib/livestore/adapter";
+import { useSessionID } from "@/lib/hooks/auth-hooks";
 
-export const Provider: FC<
+/**
+ * Livestore provider that manages the per-user store lifecycle.
+ */
+export const LivestoreProvider: FC<
   Omit<
     ComponentProps<typeof LiveStoreProvider>,
     "storeId" | "boot" | "schema" | "adapter" | "batchUpdates"
   >
 > = ({ children, ...props }) => {
-  const config = useGlobalConfig();
-
-  if (!config) {
-    // TODO: create a fallback UI
-    return (
-      <View>
-        <Text>Unexpected error</Text>
-      </View>
-    );
-  }
+  const sessionID = useSessionID();
 
   return (
     <LiveStoreProvider
       {...props}
-      storeId={config.sessionID}
+      storeId={`luna-${sessionID}`}
       schema={schema}
       adapter={adapter}
       batchUpdates={unstable_batchedUpdates}
-      // TODO: remove database seeding once livestore service live is in use
       boot={(store) => {
-        const config = store.query(config$);
-        const sessionID = config.sessionID ?? nanoid();
-
-        if (!config.sessionID) {
-          store.commit(tables.config.set({ sessionID }));
-        }
-
         // TODO: redirect to create user screen instead of creating one
         if (store.query(tables.users.where("id", sessionID).count()) === 0) {
           store.commit(

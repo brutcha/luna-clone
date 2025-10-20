@@ -10,9 +10,11 @@
     "android": "expo run:android",
     "android:debug": "bun android -- --variant debugOptimized",
     "prepare": "husky",
-    "lint": "expo lint"
+    "typecheck": "tsc --noEmit --project ./tsconfig.json",
+    "lint": "bun eslint ."
   },
   "dependencies": {
+    "@effect-atom/atom-react": "0.3.3",
     "@livestore/adapter-expo": "0.3.1",
     "@livestore/devtools-expo": "0.3.1",
     "@livestore/livestore": "0.3.1",
@@ -41,6 +43,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.1.14",
+    "@types/bun": "1.3.0",
     "@types/react": "19.1.17",
     "babel-plugin-react-compiler": "1.0.0",
     "babel-plugin-transform-vite-meta-env": "1.0.3",
