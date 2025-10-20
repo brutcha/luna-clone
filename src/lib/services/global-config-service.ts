@@ -1,21 +1,17 @@
 import { Config, Effect, Layer, LogLevel, Schema } from "effect";
 
-import { EnvironmentSchema, LogLevelSchema } from "@/domain/model";
-import { NoGlobalConfigError } from "@/domain/errors";
-import { Livestore } from "./livestore";
+import { EnvironmentSchema, LogLevelSchema } from "@/lib/services/domain/model";
+import { NoGlobalConfigError } from "@/lib/services/domain/errors";
 
 /**
  * Global configuration service.
  *
- * Resolves environment variables and Livestore data into a shared app config.
+ * Resolves environment variables into a shared app config.
  */
-export class GlobalConfig extends Effect.Service<GlobalConfig>()(
-  "@/services/global-config",
+export class GlobalConfigService extends Effect.Service<GlobalConfigService>()(
+  "@/lib/services/global-config",
   {
     effect: Effect.gen(function* () {
-      const { getConfig } = yield* Livestore;
-      const { sessionID } = yield* getConfig();
-
       const env = yield* Config.string("NODE_ENV").pipe(
         Config.withDefault("development"),
         Effect.andThen(Schema.decodeUnknown(EnvironmentSchema)),
@@ -31,7 +27,6 @@ export class GlobalConfig extends Effect.Service<GlobalConfig>()(
           Effect.succeed({
             env,
             logLevel: LogLevel.fromLiteral(logLevel),
-            sessionID,
           }),
       };
     }).pipe(
@@ -50,21 +45,19 @@ export class GlobalConfig extends Effect.Service<GlobalConfig>()(
           ),
       }),
     ),
-    dependencies: [Livestore.Live],
     accessors: true,
   },
 ) {
   static Test = Layer.succeed(
-    GlobalConfig,
-    new GlobalConfig({
+    GlobalConfigService,
+    new GlobalConfigService({
       getConfig: () =>
         Effect.succeed({
           env: "development" as const,
           logLevel: LogLevel.Debug,
-          sessionID: "mock-session-id",
         }),
     }),
   );
 
-  static Live = GlobalConfig.Default;
+  static Live = GlobalConfigService.Default;
 }

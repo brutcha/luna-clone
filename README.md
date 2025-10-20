@@ -33,6 +33,7 @@ A local-first mobile app built with Expo and Livestore, featuring SQLite persist
   - `@livestore/react` - React hooks
   - `@livestore/devtools-expo` - Development tools
   - `@livestore/sync-cf` - Cloudflare sync (planned)
+- **@effect-atom/atom-react** (v0.3.3) - Reactive atoms with Effect integration
 
 ### Styling & UI
 
@@ -58,8 +59,29 @@ A local-first mobile app built with Expo and Livestore, featuring SQLite persist
 
 - **Client**: React Native app built with Expo (`src/app.tsx`)
 - **Target**: Android only (iOS support TBD)
-- **Local Database**: Livestore SQLite with Expo adapter
-- **State Management**: Livestore with reactive queries
+- **Local Database**: Multi-tenant SQLite with Expo adapter
+- **State Management**: Livestore with reactive queries + Effect atoms for services
+
+### Multi-Tenancy Architecture
+
+The app uses a **dual-database architecture** for multi-tenancy:
+
+- **System Database** (`luna-system`) - Stores cross-user configuration (sessionID, sync settings)
+- **User Databases** (`luna-{sessionID}`) - Isolated per-user data (cycle data, symptoms, etc.)
+
+This architecture enables:
+
+- Persistent anonymous sessions that survive app restarts
+- Seamless transition from anonymous to authenticated users
+- Cross-device sync for authenticated users (sessionID = userId)
+- Data isolation between users on shared devices
+
+### State Management Patterns
+
+**Livestore** - For user domain data (queries, mutations)
+**Effect Atoms** - For service layer and cross-cutting concerns (auth, config)
+
+Effect atoms provide reactive state with Effect integration, allowing service logic to be accessed from React components while maintaining Suspense compatibility.
 
 ### Planned Features
 
@@ -67,8 +89,6 @@ A local-first mobile app built with Expo and Livestore, featuring SQLite persist
 - **Encryption**: Awaiting Livestore native support or custom implementation (TBD)
 - **Authorization**: Serverless solution preferred for production (currently mocked)
 - **Conflict Resolution**: Latest-wins strategy (Livestore default) - may be enhanced later
-
-> **Note:** Livestore's SQLite adapter has compatibility issues with Expo SDK 54, so `Livestore.Live` currently uses a test layer. Local data persists across restarts, but remote sync is disabled until the adapter is updated.
 
 ## Getting Started
 
@@ -117,6 +137,7 @@ A local-first mobile app built with Expo and Livestore, featuring SQLite persist
 | `bun android`       | Build Android app (alias for `expo run:android`)          |
 | `bun android:debug` | Build Android app in debug optimized mode                 |
 | `bun lint`          | Run ESLint with Expo config                               |
+| `bun typecheck`     | Run TypeScript type checking                              |
 | `bun prepare`       | Set up Husky git hooks (runs automatically after install) |
 
 ## Project Structure
@@ -128,27 +149,24 @@ luna-clone/
 │   └── adr/             # Architecture Decision Records
 ├── src/                 # Source code
 │   ├── index.ts         # Entry point
-│   ├── app.tsx          # Main app component with LiveStoreProvider
+│   ├── app.tsx          # Main app component
 │   ├── global.css       # Global styles (NativeWind/Tailwind)
 │   ├── components/      # React components
 │   │   ├── cycle-ring/  # Cycle ring component
 │   │   └── ui/          # UI primitives
 │   ├── domain/          # Domain models and error types
 │   ├── helpers/         # Utility helpers
-│   ├── hooks/           # Custom React hooks
-│   ├── lib/             # Utility libraries
-│   ├── livestore/       # Livestore configuration
-│   │   ├── schema.ts    # Database schema and events
-│   │   ├── adapter.ts   # Expo SQLite adapter
-│   │   ├── provider.tsx # LiveStoreProvider wrapper
-│   │   └── queries.ts   # Reactive queries
-│   ├── services/        # Effect-powered services
-│   │   ├── auth-client.ts   # Authentication service (mocked)
-│   │   ├── global-config.ts # Configuration service
-│   │   ├── livestore.ts     # Livestore service
-│   │   ├── logging.ts       # Logging service
-│   │   └── runtime.ts       # App runtime
-│   └── types/           # TypeScript type definitions
+│   └── lib/             # Core libraries
+│       ├── atoms/       # Effect atoms (reactive service state)
+│       ├── hooks/       # Custom React hooks
+│       ├── livestore/   # Livestore configuration
+│       │   ├── schema.ts        # User database schema
+│       │   ├── system-schema.ts # System database schema
+│       │   ├── adapter.ts       # Expo SQLite adapter
+│       │   └── queries.ts       # Reactive queries
+│       ├── providers/   # React context providers
+│       │   └── livestore-provider.tsx # LiveStoreProvider wrapper
+│       └── services/    # Effect services (auth, session, config, logging)
 ├── app.json             # Expo configuration
 ├── babel.config.js      # Babel configuration
 ├── eslint.config.js     # ESLint configuration
@@ -163,39 +181,74 @@ luna-clone/
 
 ### Livestore Implementation
 
-#### Schema (`src/livestore/schema.ts`)
+#### User Database Schema
 
-Defines the database schema and state:
+Defines tables, events, and materializers for user-specific data (cycles, symptoms, etc.). Each user gets an isolated database instance.
 
-- **Tables**: SQLite tables for `users` and `config`
-- **Events**: `userCreated` and `configSet` events for data mutations
-- **Materializers**: Event processors for updating SQLite tables
+#### System Database Schema
 
-#### Adapter (`src/livestore/adapter.ts`)
+Defines tables for cross-user configuration (sessionID, sync settings). Single shared database for system-level state.
 
-Configures `@livestore/adapter-expo` for SQLite persistence.
+#### Adapter
 
-#### Provider (`src/livestore/provider.tsx`)
+Configures `@livestore/adapter-expo` for SQLite persistence with proper SQL.js configuration.
 
-Wraps `LiveStoreProvider` with Effect-based configuration resolution.
+#### Provider
 
-#### Queries (`src/livestore/queries.ts`)
+Wraps `LiveStoreProvider` and manages per-user store lifecycle. Uses session hooks to determine the correct database instance.
 
-Reactive queries using `queryDb`:
+#### Queries
 
-- `config$` - Configuration data
-- `userById$` - User data by ID
-- `currentUser$` - Current authenticated user
+Reactive queries using Livestore's `queryDb` pattern. Queries automatically re-run when underlying data changes.
 
-#### Usage Example
+**Pattern:**
 
 ```typescript
 import { useQuery } from "@livestore/react";
-import { currentUser$ } from "@/livestore/queries";
 
-const Welcome = () => {
-  const { name } = useQuery(currentUser$);
-  return <Text>Welcome {name}!</Text>;
+// Use reactive queries in components
+const MyComponent = () => {
+  const data = useQuery(myQuery$);
+  return <View>{/* render data */}</View>;
+};
+```
+
+### Effect Services
+
+Services use Effect.Service pattern for dependency management and lifecycle control. Services are scoped, ensuring proper resource cleanup.
+
+#### Available Services
+
+- **AuthService** - Manages sessionID lifecycle, login/logout
+- **SessionStoreService** - Manages system database for session persistence
+- **LivestoreService** - Provides access to user Livestore instance
+- **GlobalConfigService** - Environment variables and app configuration
+- **LoggingService** - Structured logging with Effect integration
+
+### Effect Atoms
+
+Effect atoms bridge Effect services with React components, providing reactive state with Suspense support.
+
+#### Atom Pattern
+
+**Pattern:**
+
+```typescript
+// In atom file
+const myRuntime = Atom.runtime(MyServiceLayer);
+export const myAtom = myRuntime.atom(
+  Effect.gen(function* () {
+    const service = yield* MyService;
+    return yield* service.getData();
+  })
+);
+
+// In component
+import { useAtomSuspense } from "@effect-atom/atom-react";
+
+const MyComponent = () => {
+  const { value } = useAtomSuspense(myAtom);
+  return <Text>{value}</Text>;
 };
 ```
 
@@ -206,8 +259,8 @@ const Welcome = () => {
 The project uses TypeScript path aliases for cleaner imports:
 
 ```typescript
-import { schema } from "@/livestore/schema";
-import { Livestore } from "@/services/livestore";
+import { schema } from "@/lib/livestore/schema";
+import { LivestoreService } from "@/lib/services/livestore-service";
 ```
 
 Configured in `tsconfig.json` with the `@/*` alias mapping to `./src/*`.
@@ -217,52 +270,32 @@ Configured in `tsconfig.json` with the `@/*` alias mapping to `./src/*`.
 - `nativewind-env.d.ts` - NativeWind/React Native CSS types (must be in root)
 - `src/types/` - Custom type definitions and module augmentations
 
-### Services Layer
+### Authentication & Sessions
 
-The services layer uses Effect to provide dependency injection and configuration management. All services are bundled into `AppRuntime` for easy consumption.
+#### SessionID Lifecycle
 
-#### Available Services
+SessionID is managed by AuthService with the following behavior:
 
-| Service        | Purpose                                         |
-| -------------- | ----------------------------------------------- |
-| `GlobalConfig` | Environment variables and session configuration |
-| `Livestore`    | Livestore access with configuration resolution  |
-| `AuthClient`   | Authentication interface (currently mocked)     |
-| `Logging`      | Custom logger with Effect integration           |
+- **Anonymous users**: SessionID is auto-generated and persisted in system database
+- **Authenticated users**: SessionID equals userId for cross-device sync
+- **Logout**: Creates new anonymous sessionID
 
-#### Runtime Usage (`src/services/runtime.ts`)
+#### Multi-Device Sync
 
-```typescript
-import { Effect } from "effect";
-import { AppRuntime } from "@/services/runtime";
-import { AuthClient } from "@/services/auth-client";
+When a user logs in with their userId:
 
-const program = Effect.gen(function* () {
-  const { getToken } = yield* AuthClient;
-  const token = yield* getToken();
-  yield* Effect.logInfo("Retrieved auth token");
-  return token;
-});
+1. SessionID is set to userId
+2. User database changes from `luna-{randomID}` to `luna-{userId}`
+3. Same database is used across all user's devices
+4. Livestore sync handles data replication
 
-const token = await AppRuntime.runPromise(program);
-```
+#### Session Persistence
 
-#### Livestore Service
+SessionID persists in the system database, surviving app restarts. On first launch:
 
-The `Livestore` service enables code outside React components to read configuration state:
-
-```typescript
-import { Effect } from "effect";
-import { Livestore } from "@/services/livestore";
-import { AppRuntime } from "@/services/runtime";
-
-const program = Effect.gen(function* () {
-  const { sessionID } = yield* Livestore.getConfig();
-  return sessionID;
-});
-
-const sessionID = await AppRuntime.runPromise(program);
-```
+1. AuthService checks system database for existing sessionID
+2. If none exists, generates new anonymous sessionID
+3. SessionID is used to determine which user database to load
 
 ### React Compiler
 

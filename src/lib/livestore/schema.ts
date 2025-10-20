@@ -1,21 +1,10 @@
 import { Events, makeSchema, Schema, State } from "@livestore/livestore";
 
+/**
+ * User database schema - stores per-user data.
+ * Each user gets their own isolated database instance.
+ */
 export const tables = {
-  config: State.SQLite.clientDocument({
-    name: "config",
-    schema: Schema.Struct({
-      sessionID: Schema.String.pipe(Schema.minLength(21), Schema.optional),
-      isSyncEnabled: Schema.Boolean,
-    }).annotations({
-      identifier: "LivestoreConfig",
-    }),
-    default: {
-      id: "@livestore/config.tableID",
-      value: {
-        isSyncEnabled: false,
-      },
-    },
-  }),
   users: State.SQLite.table({
     name: "users",
     columns: {
@@ -32,7 +21,6 @@ export const tables = {
 };
 
 export const events = {
-  configSet: tables.config.set,
   userCreated: Events.synced({
     name: "v1.UserCreated",
     schema: Schema.Struct({

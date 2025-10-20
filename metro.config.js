@@ -6,7 +6,7 @@ const config = getDefaultConfig(__dirname);
 
 if (process.env.NODE_ENV !== "production") {
   addLiveStoreDevtoolsMiddleware(config, {
-    schemaPath: "./src/livestore/schema.ts",
+    schemaPath: "./src/lib/livestore/schema.ts",
   });
 }
 
