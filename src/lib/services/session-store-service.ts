@@ -43,15 +43,15 @@ export class SessionStoreService extends Effect.Service<SessionStoreService>()(
          * Update the config
          */
         setConfig: (config: typeof SetConfigInputSchema.Encoded) =>
-          Schema.decodeUnknownEither(SetConfigInputSchema)(config).pipe(
-            Either.map((validConfig) => {
+          Schema.decodeUnknown(SetConfigInputSchema)(config).pipe(
+            Effect.map((validConfig) => {
               store.commit(systemTables.config.set(validConfig));
             }),
             Effect.catchTags({
-              ParseError: (error: { message: string }) =>
+              ParseError: (error) =>
                 Effect.fail(
                   new InvalidSessionConfigError({
-                    message: `Invalid config input: ${error.message}`,
+                    message: `Failed to set session config: ${error.message}`,
                   }),
                 ),
             }),
