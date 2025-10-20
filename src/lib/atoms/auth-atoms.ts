@@ -11,6 +11,7 @@ const AuthLayer = AuthService.Default.pipe(
 const authRuntime: Atom.AtomRuntime<AuthService, never> =
   Atom.runtime(AuthLayer);
 
+// TODO: make atom reactive to ensure it is changed on logout
 export const sessionIDAtom = authRuntime.atom(
   Effect.gen(function* () {
     return yield* AuthService.getSessionID();
