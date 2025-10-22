@@ -49,6 +49,7 @@ export default function App() {
           <CycleRing
             timelineLengthInDays={28}
             currentDay={8}
+            ovulationDay={13}
             phases={[
               {
                 id: "menstrual",
@@ -59,19 +60,13 @@ export default function App() {
               {
                 id: "follicular",
                 startDay: 8,
-                lengthInDays: 9,
+                lengthInDays: 5,
                 color: "#3b82f6",
               },
               {
-                id: "ovulatory",
-                startDay: 17,
-                lengthInDays: 5,
-                color: "#22c55e",
-              },
-              {
                 id: "luteal",
-                startDay: 22,
-                lengthInDays: 6,
+                startDay: 14,
+                lengthInDays: 14,
                 color: "#eab308",
               },
             ]}
