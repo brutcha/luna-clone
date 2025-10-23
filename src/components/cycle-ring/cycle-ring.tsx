@@ -16,7 +16,10 @@ const CURRENT_DAY_STROKE_WIDTH = 5 as const;
 
 interface Props {
   timelineLengthInDays: number;
+  // TODO: think of if current day indicator shouldn't have more than just a createArcPath
+  // TODO: how should be day 0 handled on the timeline?
   currentDay: number;
+  // TODO: add a ovulation day indicator, a point/carret pointing it's location on a timeline
   ovulationDay: number;
   phases: PhaseShape[];
   className?: string;
