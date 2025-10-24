@@ -1,20 +1,4 @@
-// TODO: look for more robust sollution
-export const darkenColor = (color: string, amount: number): string => {
-  const hex = color.replace("#", "");
-  const r = Math.max(
-    0,
-    parseInt(hex.substring(0, 2), 16) - Math.round(255 * amount),
-  );
-  const g = Math.max(
-    0,
-    parseInt(hex.substring(2, 4), 16) - Math.round(255 * amount),
-  );
-  const b = Math.max(
-    0,
-    parseInt(hex.substring(4, 6), 16) - Math.round(255 * amount),
-  );
-  return `rgb(${r}, ${g}, ${b})`;
-};
+import { PhaseShape } from "./types";
 
 const polarToCartesian = (
   centerX: number,
@@ -44,56 +28,43 @@ export const createArcPath = (
 
 interface CreateDayAnglesParams {
   timelineLengthInDays: number;
-  strokeWidth: number;
+  gapLength: number;
   radius: number;
-  currentDayRadius: number;
-  phaseMap: Array<{ id: string; color: string } | null>;
-  totalGaps: number;
-  segmentGapMultiplier: number;
+}
+
+interface DayAngles {
+  start: number;
+  end: number;
 }
 
 export const createDayAngles = ({
   timelineLengthInDays,
-  strokeWidth,
+  gapLength,
   radius,
-  currentDayRadius,
-  phaseMap,
-  totalGaps,
-  segmentGapMultiplier,
-}: CreateDayAnglesParams) => {
+}: CreateDayAnglesParams): DayAngles[] => {
   const fullCircle = Math.PI * 2;
-  const dayAngleIncrement = fullCircle / timelineLengthInDays;
-  const strokeAngularWidth = (strokeWidth * 1.2) / radius;
-  const currentDayAngularWidth = (currentDayRadius * 2) / radius; // Account for current day circle diameter
-  const minGapRadians = Math.max(
-    0,
-    Math.max(
-      strokeAngularWidth,
-      currentDayAngularWidth * segmentGapMultiplier,
-    ) - dayAngleIncrement,
-  );
+  const gapAngleIncrement = gapLength / radius;
+  const totalDaysLength = fullCircle - gapAngleIncrement * timelineLengthInDays;
+  const dayAngleIncrement = totalDaysLength / timelineLengthInDays;
 
-  const totalGapsAngle = totalGaps * minGapRadians;
-  const adjustedDayIncrement =
-    (fullCircle - totalGapsAngle) / timelineLengthInDays;
-
-  const dayAngles: number[] = [];
+  const dayAngles: DayAngles[] = [];
   let currentAngle = -Math.PI / 2; // Start from top
 
   for (let day = 0; day < timelineLengthInDays; day++) {
-    dayAngles[day] = currentAngle;
-    currentAngle += adjustedDayIncrement;
-
-    // Add gap after each phase transition
-    if (day < timelineLengthInDays - 1) {
-      const currentPhase = phaseMap[day];
-      const nextPhase = phaseMap[day + 1];
-
-      if (currentPhase && nextPhase && currentPhase.id !== nextPhase.id) {
-        currentAngle += minGapRadians;
-      }
-    }
+    dayAngles[day] = {
+      start: currentAngle,
+      end: currentAngle + dayAngleIncrement,
+    };
+    currentAngle += dayAngleIncrement + gapAngleIncrement;
   }
 
   return dayAngles;
+};
+
+export const getCurrentPhase = (phases: PhaseShape[], currentDay: number) => {
+  const daysMap = phases.flatMap((phase) =>
+    Array.from({ length: phase.lengthInDays }, () => phase),
+  );
+
+  return daysMap[currentDay];
 };
